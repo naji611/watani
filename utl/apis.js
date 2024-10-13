@@ -9,35 +9,46 @@ const foreignUrl = `${baseUrl}/foreign`;
 const loginUrl = (username, password) =>
   `http://watani.runasp.net/api/v1/Authentication/login?username=${username}&password=${password}`;
 
-export async function RegisterJordanian(data) {
-  const response = await axios.post(jordanianUrl, data);
+// General function to handle API calls with error handling
+async function apiPostRequest(url, data) {
+  try {
+    const response = await axios.post(url, data);
+    return response;
+  } catch (error) {
+    if (error.response) {
+      // Handle server-side errors (status codes)
+      return {
+        status: error.response.status,
+        data: error.response.data, // Pass along error details
+      };
+    } else {
+      // Handle network or other client-side errors
+      return {
+        status: 500,
+        data: { message: "An unknown error occurred" },
+      };
+    }
+  }
+}
 
-  return response;
+// Registration functions
+export async function RegisterJordanian(data) {
+  return await apiPostRequest(jordanianUrl, data);
 }
 
 export async function RegisterJordanianWomenChild(data) {
-  const response = await axios.post(jordanianWomenChildUrl, data);
-
-  return response;
+  return await apiPostRequest(jordanianWomenChildUrl, data);
 }
 
 export async function RegisterGazaSons(data) {
-  const response = await axios.post(gazaSonsUrl, data);
-
-  return response;
+  return await apiPostRequest(gazaSonsUrl, data);
 }
 
 export async function RegisterForeign(data) {
-  const response = await axios.post(foreignUrl, data);
-
-  return response;
+  return await apiPostRequest(foreignUrl, data);
 }
-export async function Login(username, password) {
-  try {
-    const response = await axios.post(loginUrl(username, password));
 
-    return response;
-  } catch (error) {
-    console.error("Error logging in:", error.message);
-  }
+// Login function
+export async function Login(username, password) {
+  return await apiPostRequest(loginUrl(username, password), {});
 }

@@ -1,36 +1,82 @@
 import { createContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 export const AuthContext = createContext({
   isAuthenticated: false,
+  userData: {}, // Holds the complete user data
   token: "",
-  authenticate: () => {},
-  logout: () => {},
+  authenticate: () => {}, // Function to authenticate the user
+  logout: () => {}, // Function to logout the user
 });
 
 export default function AuthContextProvider({ children }) {
-  const [token, setToken] = useState();
+  const [token, setToken] = useState(null);
+  const [user, setUser] = useState({
+    firstName: "",
+    secondName: "",
+    thirdName: "",
+    lastName: "",
+    phoneNumber: "",
+    email: "",
+    identityNumber: "",
+    nationalityNumber: "",
+    city: "",
+    civilRegistrationNumber: null,
+    verificationMechanism: "IdentityNumber",
+  });
+
+  // Load token and user data from AsyncStorage on component mount
   useEffect(() => {
-    const getToken = async () => {
+    const loadUserData = async () => {
       const storedToken = await AsyncStorage.getItem("token");
-      if (storedToken) {
+      const storedUserData = await AsyncStorage.getItem("userData");
+
+      if (storedToken && storedUserData) {
         setToken(storedToken);
+        setUser(JSON.parse(storedUserData)); // Parse and set user data from storage
       }
     };
-    getToken();
+    loadUserData();
   }, []);
-  function authenticate(token) {
+
+  // Function to authenticate and store token and user data
+  function authenticate(token, userData) {
     setToken(token);
+    setUser(userData); // Directly set the complete user data
+
+    // Store both token and user data in AsyncStorage
     AsyncStorage.setItem("token", token);
+    AsyncStorage.setItem("userData", JSON.stringify(userData));
   }
+
+  // Function to logout and clear data
   function logout() {
     setToken(null);
+    setUser({
+      firstName: "",
+      secondName: "",
+      thirdName: "",
+      lastName: "",
+      phoneNumber: "",
+      email: "",
+      identityNumber: "",
+      nationalityNumber: "",
+      city: "",
+      civilRegistrationNumber: null,
+      verificationMechanism: "IdentityNumber",
+    });
     AsyncStorage.removeItem("token");
+    AsyncStorage.removeItem("userData");
   }
+
+  // Context value that provides user state and auth functions
   const value = {
-    isAuthenticated: !!token,
-    token,
+    isAuthenticated: !!token, // true if the token exists
+    token: token,
+    userData: user, // Expose the full user data
     authenticate: authenticate,
     logout: logout,
   };
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

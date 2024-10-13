@@ -2,12 +2,15 @@ import { View, Text } from "react-native";
 import React from "react";
 import HeaderImage from "../components/UI/HeaderImage";
 import SettingsTab from "../components/SettingsTab";
+import { useContext } from "react";
+import AuthContextProvider, { AuthContext } from "../store/TokenContext.jsx";
 export default function SettingsScreen({ navigation }) {
+  const authCtx = useContext(AuthContext);
   return (
     <View>
       <SettingsTab
-        title={"مصطفى الاحمد"}
-        subTitle={20000264545}
+        title={authCtx.userData.firstName + " " + authCtx.userData.lastName}
+        subTitle={authCtx.userData.nationalityNumber}
         icon="person-circle"
         onPress={() => {
           navigation.navigate("PersonalInfo");
@@ -25,6 +28,13 @@ export default function SettingsScreen({ navigation }) {
         icon="alert-circle-outline"
         onPress={() => {
           navigation.navigate("OverViewScreen");
+        }}
+      ></SettingsTab>
+      <SettingsTab
+        title={"تسجبل الخروج"}
+        icon="log-out-outline"
+        onPress={() => {
+          authCtx.logout();
         }}
       ></SettingsTab>
       {/* <SettingsTab title={"dark mood "} icon="moon"></SettingsTab> */}

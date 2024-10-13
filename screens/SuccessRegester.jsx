@@ -2,10 +2,12 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import RegisterImage from "../components/UI/RegisterImage";
-
-export default function SuccessRegistrationScreen({ navigation }) {
+import { useContext } from "react";
+import AuthContextProvider, { AuthContext } from "../store/TokenContext.jsx";
+export default function SuccessRegistrationScreen({ navigation, route }) {
+  const authCtx = useContext(AuthContext);
   const handleNextPress = () => {
-    navigation.navigate("HomeScreen"); // Change this to your desired screen
+    authCtx.authenticate(route.params.token, route.params.userData);
   };
 
   return (

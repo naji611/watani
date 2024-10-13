@@ -1,91 +1,115 @@
 import { View, Text, StyleSheet } from "react-native";
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
-import LoadingIndicator from "../components/UI/LoadingIndicator";
+import { useContext } from "react";
+import { AuthContext } from "../store/TokenContext.jsx";
 
 export default function PersonalDetails() {
+  const authCtx = useContext(AuthContext);
+
   return (
     <View style={styles.container}>
-      <View style={styles.row}>
-        <Ionicons name="person-outline" style={styles.icon} />
-        <View>
-          <Text style={styles.label}>الاسم</Text>
-          <Text style={styles.value}>مصطفى الاحمد</Text>
+      <View style={styles.card}>
+        <View style={styles.row}>
+          <Ionicons name="person-outline" style={styles.icon} />
+          <View style={styles.textContainer}>
+            <Text style={styles.label}>الاسم</Text>
+            <Text style={styles.value}>
+              {authCtx.userData.firstName} {authCtx.userData.lastName}
+            </Text>
+          </View>
         </View>
       </View>
 
-      <View style={styles.row}>
-        <Ionicons name="card-outline" style={styles.icon} />
-        <View>
-          <Text style={styles.label}>الرقم الوطني</Text>
-          <Text style={styles.value}>2000758076</Text>
+      <View style={styles.card}>
+        <View style={styles.row}>
+          <Ionicons name="card-outline" style={styles.icon} />
+          <View style={styles.textContainer}>
+            <Text style={styles.label}>الرقم الوطني</Text>
+            <Text style={styles.value}>
+              {authCtx.userData.nationalityNumber}
+            </Text>
+          </View>
         </View>
       </View>
 
-      <View style={styles.row}>
-        <Ionicons name="call-outline" style={styles.icon} />
-        <View>
-          <Text style={styles.label}>رقم الهاتف</Text>
-          <Text style={styles.value}>0786914584</Text>
+      <View style={styles.card}>
+        <View style={styles.row}>
+          <Ionicons name="call-outline" style={styles.icon} />
+          <View style={styles.textContainer}>
+            <Text style={styles.label}>رقم الهاتف</Text>
+            <Text style={styles.value}>{authCtx.userData.phoneNumber}</Text>
+          </View>
         </View>
       </View>
 
-      <View style={styles.row}>
-        <Ionicons name="location-outline" style={styles.icon} />
-        <View>
-          <Text style={styles.label}>المدينة</Text>
-          <Text style={styles.value}>عمان</Text>
+      <View style={styles.card}>
+        <View style={styles.row}>
+          <Ionicons name="location-outline" style={styles.icon} />
+          <View style={styles.textContainer}>
+            <Text style={styles.label}>المدينة</Text>
+            <Text style={styles.value}>{authCtx.userData.city}</Text>
+          </View>
         </View>
       </View>
 
-      <View style={styles.row}>
-        <Ionicons name="mail-outline" style={styles.icon} />
-        <View>
-          <Text style={styles.label}>البريد الإلكتروني</Text>
-          <Text style={styles.value}>johndoe@example.com</Text>
+      <View style={styles.card}>
+        <View style={styles.row}>
+          <Ionicons name="mail-outline" style={styles.icon} />
+          <View style={styles.textContainer}>
+            <Text style={styles.label}>البريد الإلكتروني</Text>
+            <Text style={styles.value}>{authCtx.userData.email}</Text>
+          </View>
         </View>
       </View>
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 20,
+    backgroundColor: "#f9f9f9",
+  },
+  card: {
     backgroundColor: "#fff",
     borderRadius: 12,
+    paddingVertical: 20, // Vertical padding for more height
+    paddingHorizontal: 15, // Horizontal padding for better spacing
+    marginVertical: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
     elevation: 8,
-    margin: 15,
   },
-  detailRow: {
+  row: {
     flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 10,
+    alignItems: "center", // Align vertically to the center
   },
   icon: {
     fontSize: 28,
     color: "#4CAF50",
     marginRight: 15,
   },
-  detailTextContainer: {
-    flex: 1, // Allow label and value to take remaining space
+  textContainer: {
+    flex: 1, // Takes up remaining space after the icon
+    justifyContent: "center",
   },
   label: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     color: "#333",
-    marginBottom: 4,
   },
   value: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#666",
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    marginTop: 4,
+
     paddingBottom: 5,
-    marginTop: 3,
+    textAlign: "center",
+    fontWeight: "bold",
   },
 });

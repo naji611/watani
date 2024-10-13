@@ -12,7 +12,10 @@ import Button from "../components/UI/Button";
 import HeaderImage from "../components/UI/HeaderImage";
 import RegisterImage from "../components/UI/RegisterImage";
 import { Login } from "../utl/apis";
+import { useContext } from "react";
+import AuthContextProvider, { AuthContext } from "../store/TokenContext.jsx";
 export default function LoginScreen({ navigation }) {
+  const authCtx = useContext(AuthContext);
   const [activeScreen, setActiveScreen] = useState("Login");
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
@@ -21,24 +24,51 @@ export default function LoginScreen({ navigation }) {
     password: true,
   });
   function handleLogin() {
+    // Validate inputs
     validateInputs();
+
     if (validation.userName && validation.password) {
-      // console.log(userName, password);
+      // Optional: Set loading state here if using a loader
+      // setLoading(true);
+
       Login(userName, password)
         .then((response) => {
-          if (response.data.success) {
-            console.log(response.data);
-            navigation.navigate("SuccessRegistrationScreen");
+          if (response && response.data && response.status === 200) {
+            console.log("Login successful:", response.data);
+
+            // Authenticate user by saving token and user data to context
+            authCtx.authenticate(response.data.token, response.data.user);
+
+            // Optional: Reset loading state
+            // setLoading(false);
+          } else {
+            console.log("Login failed:", response.status);
+            console.log(
+              "Login failed:",
+              response.data.message || "Unknown error"
+            );
+
+            // Optional: Handle specific error message display
+            alert(response.data.message || "Login failed. Please try again.");
+
+            // Reset loading state
+            // setLoading(false);
           }
         })
+        .catch((error) => {
+          console.error("Error during login:", error);
 
-        .catch((response) => {
-          console.log("Error during Logging:", response);
+          // Optional: Display a general error alert or message
+          alert("An error occurred during login. Please try again.");
+
+          // Reset loading state
+          // setLoading(false);
         });
     } else {
-      alert("Please fill all the fields");
+      alert("Please fill in all the fields");
     }
   }
+
   function validateInputs() {
     if (userName.length === 0) {
       setValidation((prev) => ({ ...prev, userName: false }));

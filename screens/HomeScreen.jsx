@@ -23,6 +23,7 @@ export default function HomeScreen({ navigation }) {
         {complaintsCat.map((comp) => {
           return (
             <Reports
+              key={comp.id}
               title={comp.ar}
               id={comp.id}
               onPress={() => {
