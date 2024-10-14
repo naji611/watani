@@ -45,15 +45,22 @@ export default function LocationPicker({ onPickedLocationHandler }) {
     }
   }, [route, isFocused]);
 
+  // Effect to load address when a location is picked
   useEffect(() => {
     async function loadLocation() {
+      console.log("mustafa");
+      console.log(pickedLocation);
+      console.log();
       if (pickedLocation) {
-        const address = await getAddress(
-          pickedLocation.lat,
-          pickedLocation.lng
-        );
-
-        onPickedLocationHandler({ ...pickedLocation, address });
+        try {
+          const address = await getAddress(
+            pickedLocation.lat,
+            pickedLocation.lng
+          );
+          onPickedLocationHandler({ ...pickedLocation, address });
+        } catch (error) {
+          Alert.alert("Address Error", "Could not fetch the address.");
+        }
       }
     }
     loadLocation();

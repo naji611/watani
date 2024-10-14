@@ -1,55 +1,88 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import React from "react";
-import { LinearGradient } from "expo-linear-gradient"; // Ensure you have expo-linear-gradient installed
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Animated,
+} from "react-native";
+import React, { useRef } from "react";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function Report({ title, description, onPress }) {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.95, // Slightly shrink the card on press
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1, // Return to original size
+      friction: 5,
+      useNativeDriver: true,
+    }).start();
+  };
+
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
-      style={styles.touchable}
-      onPress={onPress}
-    >
-      <LinearGradient
-        colors={["#a8e063", "#56ab2f"]} // Gradient colors ranging from light green to darker green
-        style={styles.container}
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onPress={onPress}
+        style={styles.touchable}
       >
-        <Text style={styles.title}>{title}</Text>
-        {description && <Text style={styles.description}>{description}</Text>}
-      </LinearGradient>
-    </TouchableOpacity>
+        <LinearGradient
+          colors={["#a1c4fd", "#c2e9fb"]} // Refined soft blue gradient
+          style={styles.container}
+        >
+          <Text style={styles.title}>{title}</Text>
+          {description && <Text style={styles.description}>{description}</Text>}
+        </LinearGradient>
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   touchable: {
-    borderRadius: 15,
-    overflow: "hidden", // Ensure rounded corners apply to gradient background
+    borderRadius: 20,
+    marginBottom: 15,
   },
   container: {
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
-    margin: 10, // Reduced margin for a more compact look
-    borderRadius: 15,
+    padding: 25,
+    margin: 10,
+    borderRadius: 20, // More rounded corners
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 6,
     minWidth: 180,
-    maxWidth: 180,
-    minHeight: 100,
+    maxWidth: 230,
+    minHeight: 130,
+    minWidth: 230,
+    backgroundColor: "#fff",
+    borderWidth: 0.5, // Soft border for more definition
+    borderColor: "#ddd",
   },
   title: {
     fontSize: 20,
-    fontWeight: "bold",
-    color: "#fff",
+    fontWeight: "700", // Slightly bolder for emphasis
+    color: "#555",
     textAlign: "center",
+    fontWeight: "bold",
   },
   description: {
-    fontSize: 16,
-    color: "#fff",
+    fontSize: 15,
+    color: "#555",
     textAlign: "center",
-    paddingHorizontal: 10,
+    marginTop: 10,
+    paddingHorizontal: 15,
   },
 });

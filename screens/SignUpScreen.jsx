@@ -21,6 +21,7 @@ import {
 import { useContext } from "react";
 import AuthContextProvider, { AuthContext } from "../store/TokenContext.jsx";
 import LoadingIndicator from "../components/UI/LoadingIndicator";
+import decodeToken from "../utl/converToken.js";
 const jordanCitiesEN = [
   { id: 1, name: "Amman" },
   { id: 2, name: "Zarqa" },
@@ -301,11 +302,23 @@ export default function SignUpScreen({ navigation }) {
           .then((response) => {
             setIsLoading(false);
             if (response.status === 200) {
-              console.log("Registration successful:", response.data.user);
-
+              console.log("Registration successful:", response.data.token);
+              const decodedData = decodeToken(response.data.token);
+              const userData = {
+                name: decodedData.name, // Full name
+                email: decodedData.email,
+                phoneNumber: decodedData.phone_number,
+                city: decodedData.City,
+                userType: decodedData.typ,
+                id: decodedData.sub,
+                expiration: decodedData.exp,
+                primaryNumber: decodedData.nameid,
+                phoneNumber: decodedData.phone_number,
+                // Add any other fields as needed
+              };
               navigation.navigate("SuccessRegistrationScreen", {
                 token: response.data.token,
-                userData: response.data.user,
+                userData: userData,
               });
             } else if (response.status === 500) {
               Alert.alert("sorry", "the system is down");
@@ -383,10 +396,23 @@ export default function SignUpScreen({ navigation }) {
         })
           .then((response) => {
             if (response.status === 200) {
-              console.log("Registration successful:", response.data.user);
+              console.log("Registration successful:", response.data.token);
+              const decodedData = decodeToken(response.data.token);
+              const userData = {
+                name: decodedData.name, // Full name
+                email: decodedData.email,
+                phoneNumber: decodedData.phone_number,
+                city: decodedData.City,
+                userType: decodedData.typ,
+                id: decodedData.sub,
+                expiration: decodedData.exp,
+                primaryNumber: decodedData.nameid,
+                phoneNumber: decodedData.phone_number,
+                // Add any other fields as needed
+              };
               navigation.navigate("SuccessRegistrationScreen", {
                 token: response.data.token,
-                userData: response.data.user,
+                userData: userData,
               });
             } else if (response.status === 500) {
               Alert.alert("sorry", "the system is down");
@@ -466,11 +492,26 @@ export default function SignUpScreen({ navigation }) {
         })
           .then((response) => {
             if (response.status === 200) {
-              console.log("Registration successful:", response.data.user);
+              console.log("Registration successful:", response.data.token);
+              const decodedData = decodeToken(response.data.token);
+              const userData = {
+                name: decodedData.name, // Full name
+                email: decodedData.email,
+                phoneNumber: decodedData.phone_number,
+                city: decodedData.City,
+                userType: decodedData.typ,
+                id: decodedData.sub,
+                expiration: decodedData.exp,
+                primaryNumber: decodedData.nameid,
+                phoneNumber: decodedData.phone_number,
+                // Add any other fields as needed
+              };
               navigation.navigate("SuccessRegistrationScreen", {
                 token: response.data.token,
-                userData: response.data.user,
+                userData: userData,
               });
+            } else if (response.status === 500) {
+              Alert.alert("sorry", "the system is down");
             } else if (response.status === 500) {
               Alert.alert("sorry", "the system is down");
             } else {
@@ -549,10 +590,23 @@ export default function SignUpScreen({ navigation }) {
         })
           .then((response) => {
             if (response.status === 200) {
-              console.log("Registration successful:", response.data.user);
+              console.log("Registration successful:", response.data.token);
+              const decodedData = decodeToken(response.data.token);
+              const userData = {
+                name: decodedData.name, // Full name
+                email: decodedData.email,
+                phoneNumber: decodedData.phone_number,
+                city: decodedData.City,
+                userType: decodedData.typ,
+                id: decodedData.sub,
+                expiration: decodedData.exp,
+                primaryNumber: decodedData.nameid,
+                phoneNumber: decodedData.phone_number,
+                // Add any other fields as needed
+              };
               navigation.navigate("SuccessRegistrationScreen", {
                 token: response.data.token,
-                userData: response.data.user,
+                userData: userData,
               });
             } else if (response.status === 500) {
               Alert.alert("sorry", "the system is down");

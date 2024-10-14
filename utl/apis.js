@@ -1,13 +1,15 @@
 import axios from "axios";
-
+const complaintsUrl = (id) =>
+  `http://watani.runasp.net/api/v1/Complaints/category/${id}/subjects`;
 const baseUrl = "http://watani.runasp.net/api/v1/Authentication/register/users";
-
+const feedbackUrl = "http://watani.runasp.net/api/v1/Feedbacks";
 const jordanianUrl = `${baseUrl}/jordanian`;
 const jordanianWomenChildUrl = `${baseUrl}/jordanian-women-child`;
 const gazaSonsUrl = `${baseUrl}/gaza-son`;
 const foreignUrl = `${baseUrl}/foreign`;
 const loginUrl = (username, password) =>
   `http://watani.runasp.net/api/v1/Authentication/login?username=${username}&password=${password}`;
+const takeComplainUrl = "http://watani.runasp.net/api/v1/Complaints";
 
 // General function to handle API calls with error handling
 async function apiPostRequest(url, data) {
@@ -51,4 +53,54 @@ export async function RegisterForeign(data) {
 // Login function
 export async function Login(username, password) {
   return await apiPostRequest(loginUrl(username, password), {});
+}
+
+export async function Feedback(opinion, userId) {
+  return await apiPostRequest(feedbackUrl, { opinion, userId });
+}
+
+export async function fetchComplaints(complaintId, token) {
+  try {
+    const response = await axios.get(complaintsUrl(complaintId), {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response;
+  } catch (error) {
+    if (error.response) {
+      return {
+        status: error.response.status,
+        data: error.response.data,
+      };
+    } else {
+      return {
+        status: 500,
+        data: { message: "An unknown error occurred" },
+      };
+    }
+  }
+}
+export async function TakeComplaint(data, token) {
+  try {
+    const response = await axios.post(takeComplainUrl, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response;
+  } catch (error) {
+    if (error.response) {
+      return {
+        status: error.response.status,
+        data: error.response.data,
+      };
+    } else {
+      console.log(error);
+      return {
+        status: 500,
+        data: { message: "An unknown error occurred" },
+      };
+    }
+  }
 }

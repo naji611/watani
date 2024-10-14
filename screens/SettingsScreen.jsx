@@ -6,11 +6,12 @@ import { useContext } from "react";
 import AuthContextProvider, { AuthContext } from "../store/TokenContext.jsx";
 export default function SettingsScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
+  console.log(authCtx.userData);
   return (
     <View>
       <SettingsTab
-        title={authCtx.userData.firstName + " " + authCtx.userData.lastName}
-        subTitle={authCtx.userData.nationalityNumber}
+        title={authCtx.userData.name}
+        subTitle={authCtx.userData.primaryNumber}
         icon="person-circle"
         onPress={() => {
           navigation.navigate("PersonalInfo");

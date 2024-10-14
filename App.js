@@ -7,11 +7,11 @@ import { useContext } from "react";
 import AuthContextProvider, { AuthContext } from "./store/TokenContext.jsx";
 
 export default function App() {
+  const authCtx = useContext(AuthContext);
   return (
     <AuthContextProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Animated.View style={{ flex: 1 }}>
-          <StatusBar style="light" />
           <MainNavigator />
         </Animated.View>
       </GestureHandlerRootView>
@@ -23,8 +23,14 @@ function MainNavigator() {
   const authCtx = useContext(AuthContext);
 
   return authCtx.isAuthenticated ? (
-    <HomeStackNavigator />
+    <>
+      <StatusBar style={authCtx.isAuthenticated ? "light" : "dark"} />
+      <HomeStackNavigator />
+    </>
   ) : (
-    <RegisterNavigation />
+    <>
+      <StatusBar style={authCtx.isAuthenticated ? "light" : "dark"} />
+      <RegisterNavigation />
+    </>
   );
 }

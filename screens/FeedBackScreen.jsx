@@ -1,28 +1,64 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, StyleSheet, Alert } from "react-native";
 import Button from "../components/UI/Button";
-
+import { useContext } from "react";
+import AuthContextProvider, { AuthContext } from "../store/TokenContext.jsx";
+import LoadingIndicator from "../components/UI/LoadingIndicator";
+import { Feedback } from "../utl/apis.js";
 export default function FeedBackScreen() {
-  const handleSubmit = () => {};
+  const authCtx = useContext(AuthContext);
+  const [isLoading, setIsLoading] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const handleSubmit = () => {
+    if (feedback === "" || feedback === null) {
+      Alert.alert("Error", "Please enter your feedback");
+    } else {
+      setIsLoading(true);
+      Feedback(feedback, authCtx.userData.id)
+        .then((response) => {
+          if (response.status === 200) {
+            console.log(response.status);
+            setFeedback("");
+            Alert.alert("Success", "Feedback submitted successfully");
+          } else if (response.status === 404) {
+            Alert.alert("Error", "something Wrong!  Please try again");
+          } else if (response.status === 500) {
+            Alert.alert("Error", "Internal Server Error");
+          }
+        })
+        .catch((er) => {
+          console.log(er);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>رأيك بهمنا لنطور من خدماتنا</Text>
+    <>
+      {isLoading && <LoadingIndicator />}
+      {!isLoading && (
+        <View style={styles.container}>
+          <Text style={styles.title}>رأيك بهمنا لنطور من خدماتنا</Text>
 
-      {/* Feedback text area */}
-      <TextInput
-        style={styles.textArea}
-        placeholder="أكتب رأيك..."
-        placeholderTextColor="#999"
-        multiline={true}
-        numberOfLines={6} // Adjusts the height of the text area
-      />
+          <TextInput
+            style={styles.textArea}
+            placeholder="أكتب رأيك..."
+            placeholderTextColor="#999"
+            multiline={true}
+            numberOfLines={6}
+            onChangeText={(val) => setFeedback(val)}
+            value={feedback}
+            maxLength={300}
+          />
 
-      {/* Submit button */}
-      <Button onPress={handleSubmit} color="green">
-        أرسل
-      </Button>
-    </View>
+          <Button onPress={handleSubmit} color="green">
+            أرسل
+          </Button>
+        </View>
+      )}
+    </>
   );
 }
 

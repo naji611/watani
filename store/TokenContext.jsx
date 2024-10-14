@@ -12,17 +12,14 @@ export const AuthContext = createContext({
 export default function AuthContextProvider({ children }) {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState({
-    firstName: "",
-    secondName: "",
-    thirdName: "",
-    lastName: "",
     phoneNumber: "",
     email: "",
-    identityNumber: "",
-    nationalityNumber: "",
+    primaryNumber: "",
+    userType: "",
     city: "",
-    civilRegistrationNumber: null,
-    verificationMechanism: "IdentityNumber",
+    expiration: "",
+    name: "",
+    id: "",
   });
 
   // Load token and user data from AsyncStorage on component mount
@@ -53,17 +50,15 @@ export default function AuthContextProvider({ children }) {
   function logout() {
     setToken(null);
     setUser({
-      firstName: "",
-      secondName: "",
-      thirdName: "",
-      lastName: "",
+      // Reset user data
       phoneNumber: "",
       email: "",
-      identityNumber: "",
-      nationalityNumber: "",
+      primaryNumber: "",
+      userType: "",
       city: "",
-      civilRegistrationNumber: null,
-      verificationMechanism: "IdentityNumber",
+      expiration: "",
+      name: "",
+      id: "",
     });
     AsyncStorage.removeItem("token");
     AsyncStorage.removeItem("userData");

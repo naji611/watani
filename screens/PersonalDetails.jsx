@@ -14,9 +14,7 @@ export default function PersonalDetails() {
           <Ionicons name="person-outline" style={styles.icon} />
           <View style={styles.textContainer}>
             <Text style={styles.label}>الاسم</Text>
-            <Text style={styles.value}>
-              {authCtx.userData.firstName} {authCtx.userData.lastName}
-            </Text>
+            <Text style={styles.value}>{authCtx.userData.name}</Text>
           </View>
         </View>
       </View>
@@ -25,10 +23,20 @@ export default function PersonalDetails() {
         <View style={styles.row}>
           <Ionicons name="card-outline" style={styles.icon} />
           <View style={styles.textContainer}>
-            <Text style={styles.label}>الرقم الوطني</Text>
-            <Text style={styles.value}>
-              {authCtx.userData.nationalityNumber}
-            </Text>
+            {authCtx.userData.userType === "ForeignUser" && (
+              <Text style={styles.label}>الرقم الشخصي</Text>
+            )}
+            {authCtx.userData.userType === "JordanianWomenChild" && (
+              <Text style={styles.label}>رقم الوثيقة</Text>
+            )}
+            {authCtx.userData.userType === "JordanianUser" && (
+              <Text style={styles.label}>الرقم الوطني</Text>
+            )}
+            {authCtx.userData.userType === "GazaSon" && (
+              <Text style={styles.label}>رقم الملف</Text>
+            )}
+
+            <Text style={styles.value}>{authCtx.userData.primaryNumber}</Text>
           </View>
         </View>
       </View>
@@ -76,14 +84,16 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
     borderRadius: 12,
-    paddingVertical: 20, // Vertical padding for more height
-    paddingHorizontal: 15, // Horizontal padding for better spacing
+    paddingVertical: 20,
+    paddingHorizontal: 15,
     marginVertical: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 8,
+    justifyContent: "center",
+    alignItems: "flex-start", // Align items to the start
   },
   row: {
     flexDirection: "row",
@@ -95,8 +105,8 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   textContainer: {
-    flex: 1, // Takes up remaining space after the icon
-    justifyContent: "center",
+    flex: 1,
+    justifyContent: "flex-start", // Align text to the start
   },
   label: {
     fontSize: 16,
@@ -107,9 +117,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     marginTop: 4,
-
     paddingBottom: 5,
-    textAlign: "center",
+    textAlign: "left", // Align text to the left
     fontWeight: "bold",
   },
 });
