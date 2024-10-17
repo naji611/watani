@@ -19,6 +19,10 @@ import TakeReportScreen from "../screens/TakeReportScreen";
 import Map from "../screens/Map";
 import PersonalDetails from "../screens/PersonalDetails";
 import SuccessRegistrationScreen from "../screens/SuccessRegester";
+import VerifyForgetPasswordFromEmail from "../screens/VerifyForgetPasswordFromEmail";
+import ResetPasswordScreen from "../screens/ResetPassword";
+import ChangePassword from "../screens/ChangePassword";
+import SuccessComplaintScreen from "../screens/SucccessComplaint";
 // Create Stack and Tab Navigators
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -140,12 +144,17 @@ export function HomeStackNavigator() {
           }}
         />
         <Stack.Screen name="Map" component={Map} />
+        <Stack.Screen name="ChangePassword" component={ChangePassword} />
         <Stack.Screen
           name="PersonalInfo"
           component={PersonalDetails}
           options={{
             title: "معلوماتي",
           }}
+        />
+        <Stack.Screen
+          name="SuccessComplaint"
+          component={SuccessComplaintScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>
@@ -174,6 +183,14 @@ export default function RegisterNavigation() {
         />
         <Stack.Screen name="OTPScreen" component={OTPScreen} />
         <Stack.Screen name="HomeStack" component={HomeStackNavigator} />
+        <Stack.Screen
+          name="verifyEmailFromEmail"
+          component={VerifyForgetPasswordFromEmail}
+        />
+        <Stack.Screen
+          name="ResetPasswordScreen"
+          component={ResetPasswordScreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

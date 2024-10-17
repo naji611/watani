@@ -120,15 +120,8 @@ export default function TakeReportScreen({ route, navigation }) {
       const response = await TakeComplaint(complaintData, authCtx.token); // Assuming you have the token in your auth context
 
       if (response.status === 200) {
-        // Optionally show a success message
-        Alert.alert(
-          "Success",
-          "Your complaint has been submitted successfully!"
-        );
-
-        // Optionally reset the form or navigate to another screen
-
-        // navigation.goBack(); // Navigate back or to another screen as needed
+        navigation.navigate("SuccessComplaint");
+        console.log("success");
       } else {
         console.log(response.data);
         Alert.alert(

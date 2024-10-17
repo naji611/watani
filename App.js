@@ -5,17 +5,22 @@ import { GestureHandlerRootView } from "react-native-gesture-handler"; // Gestur
 import Animated from "react-native-reanimated"; // Import Reanimated
 import { useContext } from "react";
 import AuthContextProvider, { AuthContext } from "./store/TokenContext.jsx";
-
+import LanguageContextProvider from "./store/languageContext.jsx";
+import ThemeContextProvider from "./store/ColorMode.jsx";
 export default function App() {
   const authCtx = useContext(AuthContext);
   return (
-    <AuthContextProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <Animated.View style={{ flex: 1 }}>
-          <MainNavigator />
-        </Animated.View>
-      </GestureHandlerRootView>
-    </AuthContextProvider>
+    <ThemeContextProvider>
+      <LanguageContextProvider>
+        <AuthContextProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <Animated.View style={{ flex: 1 }}>
+              <MainNavigator />
+            </Animated.View>
+          </GestureHandlerRootView>
+        </AuthContextProvider>
+      </LanguageContextProvider>
+    </ThemeContextProvider>
   );
 }
 

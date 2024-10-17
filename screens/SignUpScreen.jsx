@@ -308,12 +308,14 @@ export default function SignUpScreen({ navigation }) {
                 name: decodedData.name, // Full name
                 email: decodedData.email,
                 phoneNumber: decodedData.phone_number,
-                city: decodedData.City,
+                city: decodedData.city,
                 userType: decodedData.typ,
                 id: decodedData.sub,
                 expiration: decodedData.exp,
                 primaryNumber: decodedData.nameid,
                 phoneNumber: decodedData.phone_number,
+                isEmailConfirmed: decodedData.isEmailConfirmed,
+
                 // Add any other fields as needed
               };
               navigation.navigate("SuccessRegistrationScreen", {

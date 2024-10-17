@@ -1,21 +1,38 @@
 import { View, Text, StyleSheet } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import HeaderImage from "../components/UI/HeaderImage";
 import Input from "../components/UI/Input";
 import Button from "../components/UI/Button";
 import RegisterImage from "../components/UI/RegisterImage";
+import CustomAlert from "../components/UI/CustomAlert";
 
 export default function ForgetPasswordScreen({ navigation }) {
+  const [email, setEmail] = useState("");
+  const [alertVisible, setAlertVisible] = useState(false);
   return (
     <View style={styles.screen}>
+      {/* <CustomAlert
+        visible={alertVisible}
+        message={
+          " lk fjdkslgnfjgnlndhjkdsnhgjkngdhkjfdnhjkn,.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbيرجى التأكد"
+        }
+        onConfirm={() => setAlertVisible(false)}
+      ></CustomAlert> */}
+
       <RegisterImage />
       <View style={styles.container}>
         <Text style={styles.text}>هل نسيت كلمة المرور</Text>
-        <Input logo="phone" placeHolder="ادخل رقم هاتفك" />
+        <Input
+          logo="mail-outline"
+          placeHolder="ادخل  بريدك الالكتروني"
+          value={email}
+          onChangeText={(val) => setEmail(val)}
+        />
         <View style={styles.button}>
           <Button
             onPress={() => {
-              navigation.navigate("OTPScreen");
+              setAlertVisible(true);
+              // navigation.navigate("verifyEmailFromEmail");
             }}
           >
             تأكيد

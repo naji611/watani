@@ -6,7 +6,7 @@ import { AuthContext } from "../store/TokenContext.jsx";
 
 export default function PersonalDetails() {
   const authCtx = useContext(AuthContext);
-
+  console.log(authCtx.userData);
   return (
     <View style={styles.container}>
       <View style={styles.card}>
@@ -65,8 +65,22 @@ export default function PersonalDetails() {
         <View style={styles.row}>
           <Ionicons name="mail-outline" style={styles.icon} />
           <View style={styles.textContainer}>
-            <Text style={styles.label}>البريد الإلكتروني</Text>
-            <Text style={styles.value}>{authCtx.userData.email}</Text>
+            <Text style={[styles.label, ,]}>البريد الإلكتروني</Text>
+            <Text
+              style={[
+                {
+                  color:
+                    authCtx.userData.isEmailConfirmed === "True"
+                      ? "#666"
+                      : "red",
+                },
+              ]}
+            >
+              {authCtx.userData.isEmailConfirmed === "True"
+                ? " verified"
+                : "Not verified"}
+            </Text>
+            <Text style={[styles.value]}>{authCtx.userData.email}</Text>
           </View>
         </View>
       </View>
@@ -103,6 +117,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     color: "#4CAF50",
     marginRight: 15,
+    marginTop: 20,
   },
   textContainer: {
     flex: 1,
@@ -114,7 +129,7 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   value: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#666",
     marginTop: 4,
     paddingBottom: 5,

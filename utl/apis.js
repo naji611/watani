@@ -11,6 +11,9 @@ const loginUrl = (username, password) =>
   `http://watani.runasp.net/api/v1/Authentication/login?username=${username}&password=${password}`;
 const takeComplainUrl = "http://watani.runasp.net/api/v1/Complaints";
 
+const changePassUrl =
+  "http://watani.runasp.net/api/v1/Authentication/change-password";
+const fetchComplaintsStatusUrl = "http://watani.runasp.net/api/v1/Complaints";
 // General function to handle API calls with error handling
 async function apiPostRequest(url, data) {
   try {
@@ -84,6 +87,54 @@ export async function fetchComplaints(complaintId, token) {
 export async function TakeComplaint(data, token) {
   try {
     const response = await axios.post(takeComplainUrl, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response;
+  } catch (error) {
+    if (error.response) {
+      return {
+        status: error.response.status,
+        data: error.response.data,
+      };
+    } else {
+      console.log(error);
+      return {
+        status: 500,
+        data: { message: "An unknown error occurred" },
+      };
+    }
+  }
+}
+
+export async function ChangePassword(data, token) {
+  try {
+    const response = await axios.post(changePassUrl, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response;
+  } catch (error) {
+    if (error.response) {
+      return {
+        status: error.response.status,
+        data: error.response.data,
+      };
+    } else {
+      console.log(error);
+      return {
+        status: 500,
+        data: { message: "An unknown error occurred" },
+      };
+    }
+  }
+}
+
+export async function FetchComplaintsStatus(token) {
+  try {
+    const response = await axios.get(fetchComplaintsStatusUrl, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

@@ -5,13 +5,28 @@ import { useContext } from "react";
 import AuthContextProvider, { AuthContext } from "../store/TokenContext.jsx";
 import LoadingIndicator from "../components/UI/LoadingIndicator";
 import { Feedback } from "../utl/apis.js";
+import { LanguageContext } from "../store/languageContext.jsx";
+
+import CustomAlert from "../components/UI/CustomAlert.jsx";
 export default function FeedBackScreen() {
   const authCtx = useContext(AuthContext);
+  const langCtx = useContext(LanguageContext);
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertError, setAlertError] = useState(false);
   const handleSubmit = () => {
     if (feedback === "" || feedback === null) {
-      Alert.alert("Error", "Please enter your feedback");
+      if (langCtx.language === "ar") {
+        setAlertMessage(" يرجى تعبئة البيانات !");
+        setAlertVisible(true);
+        setAlertError(true);
+      } else if (langCtx.language === "en") {
+        setAlertMessage(" please fill the data !");
+        setAlertVisible(true);
+        setAlertError(true);
+      }
     } else {
       setIsLoading(true);
       Feedback(feedback, authCtx.userData.id)
@@ -19,11 +34,28 @@ export default function FeedBackScreen() {
           if (response.status === 200) {
             console.log(response.status);
             setFeedback("");
-            Alert.alert("Success", "Feedback submitted successfully");
-          } else if (response.status === 404) {
-            Alert.alert("Error", "something Wrong!  Please try again");
-          } else if (response.status === 500) {
-            Alert.alert("Error", "Internal Server Error");
+            if (langCtx.language === "ar") {
+              setAlertMessage("تمت العملية بنجاح!");
+              setAlertVisible(true);
+              setAlertError(false);
+            }
+            if (langCtx.language === "en") {
+              setAlertMessage("Operation was successful!");
+              setAlertVisible(true);
+              setAlertError(false);
+            }
+          } else if (response.status === 404 || response.status === 500) {
+            if (langCtx.language === "ar") {
+              setAlertMessage("يرجى المحاولة لاحقا!");
+              setAlertVisible(true);
+              setAlertError(true);
+            }
+            if (langCtx.language === "en") {
+              setAlertMessage("something Wrong!  Please try again");
+              setAlertVisible(true);
+              setAlertError(true);
+              setIsLoading(true);
+            }
           }
         })
         .catch((er) => {
@@ -37,6 +69,12 @@ export default function FeedBackScreen() {
 
   return (
     <>
+      <CustomAlert
+        visible={alertVisible}
+        message={alertMessage}
+        onConfirm={() => setAlertVisible(false)}
+        error={alertError}
+      ></CustomAlert>
       {isLoading && <LoadingIndicator />}
       {!isLoading && (
         <View style={styles.container}>

@@ -36,7 +36,7 @@ export default function Report({ title, description, onPress }) {
         style={styles.touchable}
       >
         <LinearGradient
-          colors={["#a1c4fd", "#c2e9fb"]} // Refined soft blue gradient
+          colors={["#2980B9", "#66BFBF"]} // Soft blue gradient with a hint of green
           style={styles.container}
         >
           <Text style={styles.title}>{title}</Text>
@@ -49,15 +49,16 @@ export default function Report({ title, description, onPress }) {
 
 const styles = StyleSheet.create({
   touchable: {
-    borderRadius: 20,
+    borderRadius: 25, // More rounded corners for a modern look
     marginBottom: 15,
+    overflow: "hidden", // Prevent clipping of the gradient
   },
   container: {
     justifyContent: "center",
     alignItems: "center",
     padding: 25,
     margin: 10,
-    borderRadius: 20, // More rounded corners
+    borderRadius: 25, // More rounded corners for a modern look
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.1,
@@ -74,15 +75,18 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: "700", // Slightly bolder for emphasis
-    color: "#555",
+    color: "#fff", // White text for better contrast against the gradient
     textAlign: "center",
     fontWeight: "bold",
+    fontFamily: "Roboto", // A clean and readable font
   },
   description: {
     fontSize: 15,
-    color: "#555",
+    color: "#fff", // White text for better contrast against the gradient
     textAlign: "center",
     marginTop: 10,
     paddingHorizontal: 15,
+    lineHeight: 1.5, // Adjust line height for better readability
+    fontFamily: "Roboto", // A clean and readable font
   },
 });

@@ -20,6 +20,7 @@ export default function AuthContextProvider({ children }) {
     expiration: "",
     name: "",
     id: "",
+    isEmailConfirmed: "",
   });
 
   // Load token and user data from AsyncStorage on component mount
@@ -44,6 +45,7 @@ export default function AuthContextProvider({ children }) {
     // Store both token and user data in AsyncStorage
     AsyncStorage.setItem("token", token);
     AsyncStorage.setItem("userData", JSON.stringify(userData));
+    console.log("from store: ", userData);
   }
 
   // Function to logout and clear data
@@ -59,6 +61,7 @@ export default function AuthContextProvider({ children }) {
       expiration: "",
       name: "",
       id: "",
+      isEmailConfirmed: "",
     });
     AsyncStorage.removeItem("token");
     AsyncStorage.removeItem("userData");

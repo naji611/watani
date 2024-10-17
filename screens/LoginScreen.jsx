@@ -15,10 +15,14 @@ import { Login } from "../utl/apis";
 import LoadingIndicator from "../components/UI/LoadingIndicator";
 import { useContext } from "react";
 import decodeToken from "../utl/converToken.js";
+import { AuthContext } from "../store/TokenContext.jsx";
+import { LanguageContext } from "../store/languageContext.jsx";
 
-import AuthContextProvider, { AuthContext } from "../store/TokenContext.jsx";
+import CustomAlert from "../components/UI/CustomAlert.jsx";
+
 export default function LoginScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
+  const langCtx = useContext(LanguageContext);
   const [activeScreen, setActiveScreen] = useState("Login");
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
@@ -27,62 +31,95 @@ export default function LoginScreen({ navigation }) {
     userName: true,
     password: true,
   });
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
   function handleLogin() {
     validateInputs();
 
     if (validation.userName && validation.password) {
       setIsLoading(true);
-
       Login(userName, password)
         .then((response) => {
           if (response.status === 200) {
             console.log("Login successful:", response.data);
-
             // Decode the token to get user data
             const decodedData = decodeToken(response.data.token);
-
             const userData = {
               name: decodedData.name, // Full name
               email: decodedData.email,
               phoneNumber: decodedData.phone_number,
-              city: decodedData.City,
+              city: decodedData.city,
               userType: decodedData.typ,
               id: decodedData.sub,
               expiration: decodedData.exp,
               primaryNumber: decodedData.nameid,
               phoneNumber: decodedData.phone_number,
+              isEmailConfirmed: decodedData.isEmailConfirmed,
               // Add any other fields as needed
             };
             // Authenticate user and store data
             authCtx.authenticate(response.data.token, userData);
           } else {
-            console.log("Login failed:", response.status);
-            console.log(
-              "Login failed:",
-              response.data.message || "Unknown error"
-            );
-            alert(response.data.message || "Login failed. Please try again.");
+            if (response.data.detail === "Can not find the specified user") {
+              if (langCtx.language === "ar") {
+                setAlertMessage("لا يوجد مستخدم مسجل بهذا الرقم!");
+                setAlertVisible(true);
+              } else {
+                setAlertMessage("User not found!");
+                setAlertVisible(true);
+              }
+            } else if (
+              response.data.detail === "Invalid username or password"
+            ) {
+              if (langCtx.language === "ar") {
+                setAlertMessage(" الرقم السري او اسم المستخدم خطأ!");
+                setAlertVisible(true);
+              } else {
+                setAlertMessage(response.data.detail);
+                setAlertVisible(true);
+              }
+            }
+            console.log("Login failed:", response.data);
           }
         })
         .catch((error) => {
           console.error("Error during login:", error);
-          alert("An error occurred during login. Please try again.");
+          if (langCtx.language === "ar") {
+            setAlertMessage("يرجى المحاولة لاحقا");
+            setAlertVisible(true);
+          } else {
+            setAlertMessage(
+              "An error occurred during login. Please try again."
+            );
+            setAlertVisible(true);
+          }
         })
         .finally(() => {
           setIsLoading(false); // Ensure loading state is reset
         });
     } else {
-      alert("Please fill in all the fields");
+      if (langCtx.language === "ar") {
+        setAlertMessage(" يرجى تعبئة البيانات ");
+        setAlertVisible(true);
+      } else {
+        setAlertMessage(response.data.detail);
+        setAlertVisible(true);
+      }
     }
   }
 
   function validateInputs() {
-    if (userName.length === 0 || userName !== null) {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+
+    // Validate username: must not be null and must be exactly 10 characters long
+    if (!userName || userName.length !== 10) {
       setValidation((prev) => ({ ...prev, userName: false }));
     } else {
       setValidation((prev) => ({ ...prev, userName: true }));
     }
-    if (password.length === 0 || userName !== null) {
+
+    // Validate password: must not be null, and must match the regex criteria
+    if (!password || !passwordRegex.test(password)) {
       setValidation((prev) => ({ ...prev, password: false }));
     } else {
       setValidation((prev) => ({ ...prev, password: true }));
@@ -91,6 +128,12 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <>
+      <CustomAlert
+        visible={alertVisible}
+        message={alertMessage}
+        onConfirm={() => setAlertVisible(false)}
+        error={true}
+      ></CustomAlert>
       {isLoading && <LoadingIndicator></LoadingIndicator>}
       {!isLoading && (
         <ScrollView style={styles.screen}>
@@ -124,9 +167,11 @@ export default function LoginScreen({ navigation }) {
             <Input
               placeHolder={"اسم المستخدم "}
               logo={"id"}
+              keyboardType="numeric"
               borderColorRed={validation.userName === false}
               onChangeText={(val) => setUserName(val)}
               value={userName}
+              maxLength={10}
             ></Input>
 
             <Input
