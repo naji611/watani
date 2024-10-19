@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     position: "absolute",
-    top: 60,
+    top: 120,
     right: 20,
     backgroundColor: "rgba(0, 128, 0, 0.7)",
     padding: 5,

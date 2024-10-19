@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import React from "react";
 import SettingsTab from "../components/SettingsTab";
 import { useContext } from "react";
@@ -9,11 +9,30 @@ export default function SettingsScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
   console.log(authCtx.userData);
   return (
-    <>
+    <ScrollView>
+      <View style={styles.container}>
+        <Text style={{ fontSize: 18, color: "#333" }}>language</Text>
+        <View style={styles.container}>
+          <View style={styles.row}>
+            <Text style={styles.label}>EN</Text>
+            <LanguageSwitch />
+            <Text style={styles.label}>AR</Text>
+          </View>
+        </View>
+        <Text style={{ fontSize: 18, color: "#333" }}>Theme</Text>
+        <View style={styles.container}>
+          <View style={styles.row}>
+            <Text style={styles.label}>Dark</Text>
+            <ButtonSwitch />
+            <Text style={styles.label}>Light</Text>
+          </View>
+        </View>
+      </View>
       <View>
         <SettingsTab
-          title={authCtx.userData.name}
-          subTitle={authCtx.userData.primaryNumber}
+          // title={authCtx.userData.name}
+          // subTitle={authCtx.userData.primaryNumber}
+          title={"معلوماتي"}
           icon="person-circle"
           onPress={() => {
             navigation.navigate("PersonalInfo");
@@ -48,23 +67,7 @@ export default function SettingsScreen({ navigation }) {
           }}
         ></SettingsTab>
       </View>
-      <View style={styles.container}>
-        <View style={styles.container}>
-          <View style={styles.row}>
-            <Text style={styles.label}>EN</Text>
-            <LanguageSwitch />
-            <Text style={styles.label}>AR</Text>
-          </View>
-        </View>
-        <View style={styles.container}>
-          <View style={styles.row}>
-            <Text style={styles.label}>Dark</Text>
-            <ButtonSwitch />
-            <Text style={styles.label}>Light</Text>
-          </View>
-        </View>
-      </View>
-    </>
+    </ScrollView>
   );
 }
 const styles = StyleSheet.create({
@@ -72,14 +75,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: 10,
     backgroundColor: "#f5f5f5", // Light background color for better contrast
   },
   row: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center", // Align items vertically centered
-    width: "80%", // Adjust the width as needed
+    width: "50%", // Adjust the width as needed
   },
   label: {
     fontSize: 18,

@@ -13,7 +13,12 @@ const takeComplainUrl = "http://watani.runasp.net/api/v1/Complaints";
 
 const changePassUrl =
   "http://watani.runasp.net/api/v1/Authentication/change-password";
+
 const fetchComplaintsStatusUrl = "http://watani.runasp.net/api/v1/Complaints";
+
+const forgetPasswordUrl =
+  "http://watani.runasp.net/api/v1/Authentication/reset-password-token";
+
 // General function to handle API calls with error handling
 async function apiPostRequest(url, data) {
   try {
@@ -132,14 +137,37 @@ export async function ChangePassword(data, token) {
   }
 }
 
-export async function FetchComplaintsStatus(token) {
+export async function FetchComplaintsStatus(token, userId) {
   try {
     const response = await axios.get(fetchComplaintsStatusUrl, {
       headers: {
         Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
+      params: { userId }, // Include userId as a query parameter
     });
-    return response;
+    return response.data; // Return only the data part of the response
+  } catch (error) {
+    if (error.response) {
+      return {
+        status: error.response.status,
+        data: error.response.data,
+      };
+    } else {
+      console.log(error);
+      return {
+        status: 500,
+        data: { message: "An unknown error occurred" },
+      };
+    }
+  }
+}
+export async function ForgetPassword(email) {
+  try {
+    const response = await axios.get(forgetPasswordUrl, {
+      params: { email },
+    });
+    return response.data; // Return only the data part of the response
   } catch (error) {
     if (error.response) {
       return {

@@ -71,7 +71,7 @@ export default function PersonalDetails() {
                 {
                   color:
                     authCtx.userData.isEmailConfirmed === "True"
-                      ? "#666"
+                      ? "green"
                       : "red",
                 },
               ]}

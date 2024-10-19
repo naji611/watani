@@ -35,8 +35,9 @@ export default function Report({ title, description, onPress }) {
         onPress={onPress}
         style={styles.touchable}
       >
+        {/* colors={["#2980B9", "#66BFBF"]} */}
         <LinearGradient
-          colors={["#2980B9", "#66BFBF"]} // Soft blue gradient with a hint of green
+          colors={["#6CAAA4", "#66BFBF"]} // Soft blue gradient with a hint of green
           style={styles.container}
         >
           <Text style={styles.title}>{title}</Text>
@@ -64,10 +65,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 6,
-    minWidth: 180,
-    maxWidth: 230,
+
+    maxWidth: 320,
     minHeight: 130,
-    minWidth: 230,
+    minWidth: 320,
     backgroundColor: "#fff",
     borderWidth: 0.5, // Soft border for more definition
     borderColor: "#ddd",

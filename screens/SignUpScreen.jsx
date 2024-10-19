@@ -22,6 +22,8 @@ import { useContext } from "react";
 import AuthContextProvider, { AuthContext } from "../store/TokenContext.jsx";
 import LoadingIndicator from "../components/UI/LoadingIndicator";
 import decodeToken from "../utl/converToken.js";
+import CustomAlert from "../components/UI/CustomAlert.jsx";
+import { LanguageContext } from "../store/languageContext.jsx";
 const jordanCitiesEN = [
   { id: 1, name: "Amman" },
   { id: 2, name: "Zarqa" },
@@ -53,6 +55,10 @@ const jordanCitiesAR = [
 
 export default function SignUpScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
+  const langCtx = useContext(LanguageContext);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertError, setAlertError] = useState(false);
   const [activeScreen, setActiveScreen] = useState("signUp");
   const [selectedId, setSelectedId] = useState("1");
   const [selectedCity, setSelectedCity] = useState(jordanCitiesAR[0].name);
@@ -116,105 +122,130 @@ export default function SignUpScreen({ navigation }) {
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
     const phoneRegex = /^07[789]\d{7}$/;
 
+    let isValid = true;
+
+    // General validation for all cases
     if (!emailRegex.test(email.trim())) {
       updatedValidation.email = false;
-      console.log("Invalid email");
+      isValid = false;
     } else {
       updatedValidation.email = true;
     }
 
     if (firstName === "") {
       updatedValidation.firstName = false;
+      isValid = false;
     } else {
       updatedValidation.firstName = true;
     }
 
     if (secondName === "") {
-      // Check for an empty string instead of length < 0
       updatedValidation.secondName = false;
+      isValid = false;
     } else {
       updatedValidation.secondName = true;
     }
 
     if (thirdName === "") {
-      // Same logic applied here
       updatedValidation.thirdName = false;
+      isValid = false;
     } else {
       updatedValidation.thirdName = true;
     }
 
     if (LastName === "") {
-      // Same logic applied here
       updatedValidation.LastName = false;
+      isValid = false;
     } else {
       updatedValidation.LastName = true;
     }
 
     if (!phoneRegex.test(phoneNumber)) {
       updatedValidation.phoneNumber = false;
+      isValid = false;
     } else {
       updatedValidation.phoneNumber = true;
     }
 
     if (!passwordRegex.test(password)) {
       updatedValidation.password = false;
+      isValid = false;
     } else {
       updatedValidation.password = true;
     }
+
     if (!passwordRegex.test(password) || confirmPassword !== password) {
       updatedValidation.confirmPassword = false;
+      isValid = false;
     } else {
       updatedValidation.confirmPassword = true;
     }
+
+    // Conditional validation based on selectedId
     if (selectedId === "1") {
+      // Validation for Jordanian users
       if (nationalityId.length !== 10) {
         updatedValidation.nationalityId = false;
+        isValid = false;
       } else {
         updatedValidation.nationalityId = true;
       }
+
       if (identityNumber.length !== 8) {
         updatedValidation.identityNumber = false;
+        isValid = false;
       } else {
-        setIdentityNumber(identityNumber.toUpperCase());
         updatedValidation.identityNumber = true;
       }
     } else if (selectedId === "2") {
+      // Validation for Jordanian Women Child users
       if (serialNumberJordanSn.length !== 10) {
         updatedValidation.serialNumberJordanSn = false;
+        isValid = false;
       } else {
         updatedValidation.serialNumberJordanSn = true;
       }
+
       if (documentNumberJordanSn.length !== 8) {
         updatedValidation.documentNumberJordanSn = false;
+        isValid = false;
       } else {
         updatedValidation.documentNumberJordanSn = true;
       }
     } else if (selectedId === "3") {
+      // Validation for Gaza Sons users
       if (fileNumberGaza.length !== 10) {
         updatedValidation.fileNumberGaza = false;
+        isValid = false;
       } else {
         updatedValidation.fileNumberGaza = true;
       }
 
       if (documentNumberGaza.length !== 8) {
         updatedValidation.documentNumberGaza = false;
+        isValid = false;
       } else {
         updatedValidation.documentNumberGaza = true;
       }
     } else if (selectedId === "4") {
+      // Validation for Foreign users
       if (personalNumber.length !== 10) {
         updatedValidation.personalNumber = false;
+        isValid = false;
       } else {
         updatedValidation.personalNumber = true;
       }
+
       if (birthYear.length !== 4) {
         updatedValidation.birthYear = false;
+        isValid = false;
       } else {
         updatedValidation.birthYear = true;
       }
     }
 
     setValidation(updatedValidation);
+    return isValid; // Return true if all relevant validations pass
   }
 
   const radioButtons = [
@@ -254,405 +285,231 @@ export default function SignUpScreen({ navigation }) {
     console.log(selectedId);
     setSelectedId(selectedId);
   }
-  function onSubmit() {
-    validInputs();
-    if (selectedId == 1) {
-      if (
-        validation.firstName &&
-        validation.email &&
-        validation.secondName &&
-        validation.thirdName &&
-        validation.LastName &&
-        validation.nationalityId &&
-        validation.identityNumber &&
-        validation.phoneNumber &&
-        validation.password &&
-        validation.confirmPassword
-      ) {
-        console.log({
-          firstName,
-          secondName,
-          thirdName,
-          LastName,
-          phoneNumber,
-          email: email.trim(),
-          password,
-          City: selectedCity,
-          nationalityNumber: nationalityId,
-          verificationMechanism: "IdentityNumber",
-          identityNumber,
-          City: selectedCity,
-          civilRegistrationNumber: null,
-        });
-        setIsLoading(true);
-        RegisterJordanian({
-          firstName,
-          secondName,
-          thirdName,
-          LastName,
-          phoneNumber,
-          email: email.trim(),
-          password,
-          nationalityNumber: nationalityId,
-          verificationMechanism: "IdentityNumber",
-          identityNumber: identityNumber.toUpperCase(),
-          City: selectedCity,
-          civilRegistrationNumber: null,
-        })
-          .then((response) => {
-            setIsLoading(false);
-            if (response.status === 200) {
-              console.log("Registration successful:", response.data.token);
-              const decodedData = decodeToken(response.data.token);
-              const userData = {
-                name: decodedData.name, // Full name
-                email: decodedData.email,
-                phoneNumber: decodedData.phone_number,
-                city: decodedData.city,
-                userType: decodedData.typ,
-                id: decodedData.sub,
-                expiration: decodedData.exp,
-                primaryNumber: decodedData.nameid,
-                phoneNumber: decodedData.phone_number,
-                isEmailConfirmed: decodedData.isEmailConfirmed,
+  // Validation function for Jordanians
+  function isValidJordanian() {
+    return (
+      validation.firstName &&
+      validation.email &&
+      validation.secondName &&
+      validation.thirdName &&
+      validation.LastName &&
+      validation.nationalityId &&
+      validation.identityNumber &&
+      validation.phoneNumber &&
+      validation.password &&
+      validation.confirmPassword
+    );
+  }
 
-                // Add any other fields as needed
-              };
-              navigation.navigate("SuccessRegistrationScreen", {
-                token: response.data.token,
-                userData: userData,
-              });
-            } else if (response.status === 500) {
-              Alert.alert("sorry", "the system is down");
-            } else {
-              console.log(
-                "Registration failed:",
-                response.data.detail
-                  ? Alert.alert("check  your data", response.data.detail)
-                  : response.data.errors
-                  ? Alert.alert("validation Error", response.data.errors[0])
-                  : response
-              );
-            }
-          })
-          .catch((error) => {
-            // Check if it's a 400 error
-            if (error.response && error.response.status === 400) {
-              const errorData = error.response.data;
+  // Validation function for Jordanian Women and Children
+  function isValidJordanianWomenChild() {
+    return (
+      validation.firstName &&
+      validation.secondName &&
+      validation.thirdName &&
+      validation.LastName &&
+      validation.phoneNumber &&
+      validation.email &&
+      validation.password &&
+      validation.documentNumberJordanSn &&
+      validation.serialNumberJordanSn
+    );
+  }
 
-              // Handle validation errors (field-specific)
-              if (errorData.errors) {
-                const errors = errorData.errors;
-                console.log("Validation errors:", errors);
-              }
-              // Handle general errors
-              else if (errorData.detail) {
-                setErrorMessage({ general: errorData.detail });
-                console.log("General error:", errorData.detail);
-              }
-            } else {
-              console.log("Error during registration:", error);
-            }
-          })
-          .finally(() => {
-            // Always called at the end, whether success or failure
-            setIsLoading(false);
-          });
+  // Validation function for Gaza Sons
+  function isValidGazaSon() {
+    return (
+      validation.firstName &&
+      validation.secondName &&
+      validation.thirdName &&
+      validation.LastName &&
+      validation.phoneNumber &&
+      validation.email &&
+      validation.password &&
+      validation.documentNumberGaza &&
+      validation.fileNumberGaza
+    );
+  }
+
+  function isValidForeign() {
+    return (
+      validation.firstName &&
+      validation.secondName &&
+      validation.thirdName &&
+      validation.LastName &&
+      validation.phoneNumber &&
+      validation.email &&
+      validation.password &&
+      validation.personalNumber &&
+      validation.birthYear
+    );
+  }
+  function handleRegistrationSuccess(response) {
+    const decodedData = decodeToken(response.data.token);
+    const userData = {
+      name: decodedData.name,
+      email: decodedData.email,
+      phoneNumber: decodedData.phone_number,
+      city: decodedData.city,
+      userType: decodedData.typ,
+      id: decodedData.sub,
+      expiration: decodedData.exp,
+      primaryNumber: decodedData.nameid,
+      isEmailConfirmed: decodedData.isEmailConfirmed,
+    };
+    navigation.navigate("SuccessRegistrationScreen", {
+      token: response.data.token,
+      userData: userData,
+    });
+  }
+  function handleRegistrationFailure(response) {
+    if (response.status === 500) {
+      setAlertMessage("Sorry", "The system is down");
+      setAlertError(true);
+      setAlertVisible(true);
+    } else {
+      if (response.data.detail) {
+        setAlertMessage("Registration failed," + response.data.detail);
+        setAlertError(true);
+        setAlertVisible(true);
       }
-    } else if (selectedId == 2) {
-      if (
-        validation.firstName &&
-        validation.secondName &&
-        validation.thirdName &&
-        validation.LastName &&
-        validation.phoneNumber &&
-        validation.email &&
-        validation.password &&
-        validation.documentNumberJordanSn &&
-        validation.serialNumberJordanSn
-      ) {
-        console.log({
-          firstName,
-          secondName,
-          thirdName,
-          LastName,
-          phoneNumber,
-          email,
-          password,
-          City: selectedCity,
-          documentNumber: documentNumberJordanSn,
-          serialNumber: serialNumberJordanSn,
-        });
-        setIsLoading(true);
-        RegisterJordanianWomenChild({
-          firstName,
-          secondName,
-          thirdName,
-          LastName,
-          phoneNumber,
-          email: email.trim(),
-          password,
-          City: selectedCity,
-          documentNumber: documentNumberJordanSn,
-          serialNumber: serialNumberJordanSn,
-        })
-          .then((response) => {
-            if (response.status === 200) {
-              console.log("Registration successful:", response.data.token);
-              const decodedData = decodeToken(response.data.token);
-              const userData = {
-                name: decodedData.name, // Full name
-                email: decodedData.email,
-                phoneNumber: decodedData.phone_number,
-                city: decodedData.City,
-                userType: decodedData.typ,
-                id: decodedData.sub,
-                expiration: decodedData.exp,
-                primaryNumber: decodedData.nameid,
-                phoneNumber: decodedData.phone_number,
-                // Add any other fields as needed
-              };
-              navigation.navigate("SuccessRegistrationScreen", {
-                token: response.data.token,
-                userData: userData,
-              });
-            } else if (response.status === 500) {
-              Alert.alert("sorry", "the system is down");
-            } else {
-              console.log(
-                "Registration failed:",
-                response.data.detail
-                  ? Alert.alert("check  your data", response.data.detail)
-                  : response.data.errors
-                  ? Alert.alert("validation Error", response.data.errors[0])
-                  : response
-              );
-            }
-          })
-          .catch((error) => {
-            // Check if it's a 400 error
-            if (error.response && error.response.status === 400) {
-              const errorData = error.response.data;
 
-              // Handle validation errors (field-specific)
-              if (errorData.errors) {
-                const errors = errorData.errors;
-                console.log("Validation errors:", errors);
-              }
-              // Handle general errors
-              else if (errorData.detail) {
-                setErrorMessage({ general: errorData.detail });
-                console.log("General error:", errorData.detail);
-              }
-            } else {
-              console.log("Error during registration:", error);
-            }
-          })
-          .finally(() => {
-            // Always called at the end, whether success or failure
-            setIsLoading(false);
-          });
-      } else {
-        console.error("Validation failed. Please fill in all required fields.");
-      }
-    } else if (selectedId == 3) {
-      if (
-        validation.firstName &&
-        validation.secondName &&
-        validation.thirdName &&
-        validation.LastName &&
-        validation.phoneNumber &&
-        validation.email &&
-        validation.password &&
-        validation.documentNumberGaza &&
-        validation.fileNumberGaza
-      ) {
-        console.log({
-          firstName,
-          secondName,
-          thirdName,
-          LastName,
-          phoneNumber,
-          email,
-          password,
-          City: selectedCity,
-          documentNumber: documentNumberGaza,
-          fileNumber: fileNumberGaza,
-        });
-        setIsLoading(true);
-        RegisterGazaSons({
-          firstName,
-          secondName,
-          thirdName,
-          LastName,
-          phoneNumber,
-          email: email.trim(),
-          password,
-          City: selectedCity,
-          documentNumber: documentNumberGaza,
-          fileNumber: fileNumberGaza,
-        })
-          .then((response) => {
-            if (response.status === 200) {
-              console.log("Registration successful:", response.data.token);
-              const decodedData = decodeToken(response.data.token);
-              const userData = {
-                name: decodedData.name, // Full name
-                email: decodedData.email,
-                phoneNumber: decodedData.phone_number,
-                city: decodedData.City,
-                userType: decodedData.typ,
-                id: decodedData.sub,
-                expiration: decodedData.exp,
-                primaryNumber: decodedData.nameid,
-                phoneNumber: decodedData.phone_number,
-                // Add any other fields as needed
-              };
-              navigation.navigate("SuccessRegistrationScreen", {
-                token: response.data.token,
-                userData: userData,
-              });
-            } else if (response.status === 500) {
-              Alert.alert("sorry", "the system is down");
-            } else if (response.status === 500) {
-              Alert.alert("sorry", "the system is down");
-            } else {
-              console.log(
-                "Registration failed:",
-                response.data.detail
-                  ? Alert.alert("check  your data", response.data.detail)
-                  : response.data.errors
-                  ? Alert.alert("validation Error", response.data.errors[0])
-                  : response
-              );
-            }
-          })
-          .catch((error) => {
-            // Check if it's a 400 error
-            if (error.response && error.response.status === 400) {
-              const errorData = error.response.data;
-
-              // Handle validation errors (field-specific)
-              if (errorData.errors) {
-                const errors = errorData.errors;
-                console.log("Validation errors:", errors);
-              }
-              // Handle general errors
-              else if (errorData.detail) {
-                setErrorMessage({ general: errorData.detail });
-                console.log("General error:", errorData.detail);
-              }
-            } else {
-              console.log("Error during registration:", error);
-            }
-          })
-          .finally(() => {
-            // Always called at the end, whether success or failure
-            setIsLoading(false);
-          });
-      } else {
-        console.error("Validation failed. Please fill in all required fields.");
-      }
-    } else if (selectedId == 4) {
-      if (
-        validation.firstName &&
-        validation.secondName &&
-        validation.thirdName &&
-        validation.LastName &&
-        validation.phoneNumber &&
-        validation.email &&
-        validation.password &&
-        validation.personalNumber &&
-        validation.birthYear
-      ) {
-        console.log({
-          firstName,
-          secondName,
-          thirdName,
-          LastName,
-          phoneNumber,
-          email,
-          password,
-          City: selectedCity,
-          personalNumber,
-          yearOfBirth: birthYear,
-        });
-        setIsLoading(true);
-        RegisterForeign({
-          firstName,
-          secondName,
-          thirdName,
-          LastName,
-          phoneNumber,
-          email: email.trim(),
-          password,
-          City: selectedCity,
-          personalNumber,
-          yearOfBirth: birthYear,
-        })
-          .then((response) => {
-            if (response.status === 200) {
-              console.log("Registration successful:", response.data.token);
-              const decodedData = decodeToken(response.data.token);
-              const userData = {
-                name: decodedData.name, // Full name
-                email: decodedData.email,
-                phoneNumber: decodedData.phone_number,
-                city: decodedData.City,
-                userType: decodedData.typ,
-                id: decodedData.sub,
-                expiration: decodedData.exp,
-                primaryNumber: decodedData.nameid,
-                phoneNumber: decodedData.phone_number,
-                // Add any other fields as needed
-              };
-              navigation.navigate("SuccessRegistrationScreen", {
-                token: response.data.token,
-                userData: userData,
-              });
-            } else if (response.status === 500) {
-              Alert.alert("sorry", "the system is down");
-            } else {
-              console.log(
-                "Registration failed:",
-                response.data.detail
-                  ? Alert.alert("check  your data", response.data.detail)
-                  : response.data.errors
-                  ? response.data.errors
-                  : response
-              );
-            }
-          })
-          .catch((error) => {
-            // Check if it's a 400 error
-            if (error.response && error.response.status === 400) {
-              const errorData = error.response.data;
-
-              // Handle validation errors (field-specific)
-              if (errorData.errors) {
-                const errors = errorData.errors;
-                console.log("Validation errors:", errors);
-              }
-              // Handle general errors
-              else if (errorData.detail) {
-                setErrorMessage({ general: errorData.detail });
-                console.log("General error:", errorData.detail);
-              }
-            } else {
-              console.log("Error during registration:", error);
-            }
-          })
-          .finally(() => {
-            // Always called at the end, whether success or failure
-            setIsLoading(false);
-          });
-      } else {
-        console.error("Validation failed. Please fill in all required fields.");
+      if (response.data.errors) {
+        console.log(response.data.errors);
+        if (response.data.errors.DocumentNumber) {
+          setAlertMessage("Document Number is not in the correct format.");
+          setAlertError(true);
+          setAlertVisible(true);
+        } else if (response.data.errors.SerialNumber) {
+          setAlertMessage("Serial Number is not in the correct format.");
+          setAlertError(true);
+          setAlertVisible(true);
+        } else if (response.data.errors.FileNumber) {
+          setAlertMessage("File Number is not in the correct format.");
+          setAlertError(true);
+          setAlertVisible(true);
+        } else if (response.data.errors.PersonalNumber) {
+          setAlertMessage("Personal Number is not in the correct format.");
+          setAlertError(true);
+          setAlertVisible(true);
+        }
       }
     }
   }
+  function handleError(error) {
+    if (error.response && error.response.status === 400) {
+      console.log("error:", error);
+      const errorData = error.response.data;
+      if (errorData.errors) {
+        console.log("Validation errors:", errorData.errors);
+      } else if (errorData.detail) {
+        setErrorMessage({ general: errorData.detail });
+        console.log("General error:", errorData.detail);
+      }
+    } else {
+      console.log("Error during registration:", error);
+    }
+  }
+
+  function submitRegistration(apiCall, registrationData) {
+    setIsLoading(true);
+    apiCall(registrationData)
+      .then((response) => {
+        if (response.status === 200) {
+          handleRegistrationSuccess(response);
+        } else {
+          handleRegistrationFailure(response);
+        }
+      })
+      .catch(handleError)
+      .finally(() => setIsLoading(false));
+  }
+  function onSubmit() {
+    const isFormValid = validInputs();
+
+    // Registration flow for Jordanians
+    if (selectedId == 1 && isFormValid) {
+      const registrationData = {
+        firstName,
+        secondName,
+        thirdName,
+        LastName,
+        phoneNumber,
+        email: email.trim(),
+        password,
+        City: selectedCity,
+        nationalityNumber: nationalityId,
+        verificationMechanism: "IdentityNumber",
+        identityNumber: identityNumber.toUpperCase(),
+        civilRegistrationNumber: null,
+      };
+      submitRegistration(RegisterJordanian, registrationData);
+    }
+    // Registration flow for Jordanian Women and Children
+    else if (selectedId == 2 && isFormValid) {
+      const registrationData = {
+        firstName,
+        secondName,
+        thirdName,
+        LastName,
+        phoneNumber,
+        email: email.trim(),
+        password,
+        City: selectedCity,
+        documentNumber: documentNumberJordanSn,
+        serialNumber: serialNumberJordanSn,
+      };
+      submitRegistration(RegisterJordanianWomenChild, registrationData);
+    }
+    // Registration flow for Gaza Sons
+    else if (selectedId == 3 && isFormValid) {
+      const registrationData = {
+        firstName,
+        secondName,
+        thirdName,
+        LastName,
+        phoneNumber,
+        email: email.trim(),
+        password,
+        City: selectedCity,
+        documentNumber: documentNumberGaza,
+        fileNumber: fileNumberGaza,
+      };
+      submitRegistration(RegisterGazaSons, registrationData);
+    }
+    // Registration flow for Foreigners
+    else if (selectedId == 4 && isFormValid) {
+      const registrationData = {
+        firstName,
+        secondName,
+        thirdName,
+        LastName,
+        phoneNumber,
+        email: email.trim(),
+        password,
+        City: selectedCity,
+        personalNumber,
+        yearOfBirth: birthYear,
+      };
+      submitRegistration(RegisterForeign, registrationData);
+    }
+    // Fallback for invalid inputs
+    else {
+      setAlertMessage("Validation failed. Please fill in all required fields.");
+      setAlertError(true);
+      setAlertVisible(true);
+      console.log("Validation failed. Please fill in all required fields.");
+    }
+  }
+
   return (
     <>
+      <CustomAlert
+        visible={alertVisible}
+        message={alertMessage}
+        onConfirm={() => setAlertVisible(false)}
+        error={alertError}
+      ></CustomAlert>
       {isLoading && <LoadingIndicator />}
       {!isLoading && (
         <ScrollView
@@ -888,7 +745,6 @@ export default function SignUpScreen({ navigation }) {
     </>
   );
 }
-
 const styles = StyleSheet.create({
   screen: { flex: 1 },
 
@@ -960,88 +816,3 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
 });
-
-const handleServerResponse = (status, data) => {
-  if (status === 200) {
-    console.log("Registration successful:", data);
-    navigation.navigate("SuccessRegistrationScreen");
-  } else if (status === 500) {
-    Alert.alert(
-      "System Error",
-      "Sorry, the system is down. Please try again later."
-    );
-  } else {
-    const message = data.detail
-      ? `Details: ${data.detail}`
-      : `Status: ${status}`;
-    Alert.alert("Registration Failed", message);
-  }
-};
-const setFieldErrors = (errors) => {
-  setErrorMessage({
-    firstName: errors.FirstName ? errors.FirstName[0] : null,
-    secondName: errors.SecondName ? errors.SecondName[0] : null,
-    thirdName: errors.ThirdName ? errors.ThirdName[0] : null,
-    lastName: errors.LastName ? errors.LastName[0] : null,
-    email: errors.Email ? errors.Email[0] : null,
-    password: errors.Password ? errors.Password[0] : null,
-    phoneNumber: errors.PhoneNumber ? errors.PhoneNumber[0] : null,
-    identityNumber: errors.IdentityNumber ? errors.IdentityNumber[0] : null,
-    nationalityId: errors.NationalityNumber
-      ? errors.NationalityNumber[0]
-      : null,
-    civilRegistrationNumber: errors.CivilRegistrationNumber
-      ? errors.CivilRegistrationNumber[0]
-      : null,
-  });
-};
-const registerJordanianUser = async () => {
-  try {
-    const response = await RegisterJordanian({
-      firstName,
-      secondName,
-      thirdName,
-      LastName,
-      phoneNumber,
-      email,
-      password,
-      nationalityNumber: nationalityId,
-      verificationMechanism: "IdentityNumber",
-      identityNumber,
-      City: selectedCity,
-      civilRegistrationNumber: null,
-    });
-
-    handleServerResponse(response.status, response.data);
-  } catch (error) {
-    if (error.response) {
-      const { status, data } = error.response;
-
-      // Handle 400 validation errors
-      if (status === 400 && data.errors) {
-        setFieldErrors(data.errors);
-        console.log("Validation errors:", data.errors);
-        Alert.alert(
-          "Validation Error",
-          "Please check the highlighted fields and try again."
-        );
-      }
-      // Handle general errors (non-field specific)
-      else if (status === 400 && data.detail) {
-        setErrorMessage({ general: data.detail });
-        Alert.alert("Registration Error", data.detail);
-      }
-      // Handle other error statuses
-      else {
-        console.log("Unexpected error:", error.response);
-        Alert.alert("Error", `An error occurred: ${status}. Please try again.`);
-      }
-    } else {
-      console.log("Network or server error:", error);
-      Alert.alert(
-        "Connection Error",
-        "Could not connect to the server. Please check your internet connection."
-      );
-    }
-  }
-};

@@ -38,6 +38,11 @@ export default function ChangePasswordScreen({ navigation }) {
           setModelVisible(true);
           navigation.navigate("HomeTabs");
         } else {
+          if (validation.newPassword !== validation.confirmPassword) {
+            setModelMessage("the confirm password is not match ");
+
+            setModelVisible(true);
+          }
           console.log(response);
           setModelMessage("Something went wrong");
           setModelVisible(true);

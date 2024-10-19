@@ -3,12 +3,15 @@ import RegisterNavigation from "./navigation/RegisterNavigation";
 import { HomeStackNavigator } from "./navigation/RegisterNavigation";
 import { GestureHandlerRootView } from "react-native-gesture-handler"; // GestureHandler required
 import Animated from "react-native-reanimated"; // Import Reanimated
-import { useContext } from "react";
-import AuthContextProvider, { AuthContext } from "./store/TokenContext.jsx";
+import AuthContextProvider from "./store/TokenContext.jsx";
 import LanguageContextProvider from "./store/languageContext.jsx";
 import ThemeContextProvider from "./store/ColorMode.jsx";
+import CustomAlert from "./components/UI/CustomAlert.jsx";
+import { useContext, useEffect } from "react";
+import { AuthContext } from "./store/TokenContext";
+import { LanguageContext } from "./store/languageContext.jsx";
+
 export default function App() {
-  const authCtx = useContext(AuthContext);
   return (
     <ThemeContextProvider>
       <LanguageContextProvider>
@@ -26,16 +29,22 @@ export default function App() {
 
 function MainNavigator() {
   const authCtx = useContext(AuthContext);
+  const languageCtx = useContext(LanguageContext);
+  console.log(authCtx.showAlert);
+  return (
+    <>
+      {authCtx.isAuthenticated ? (
+        <>
+          <StatusBar style="light" />
 
-  return authCtx.isAuthenticated ? (
-    <>
-      <StatusBar style={authCtx.isAuthenticated ? "light" : "dark"} />
-      <HomeStackNavigator />
-    </>
-  ) : (
-    <>
-      <StatusBar style={authCtx.isAuthenticated ? "light" : "dark"} />
-      <RegisterNavigation />
+          <HomeStackNavigator></HomeStackNavigator>
+        </>
+      ) : (
+        <>
+          <StatusBar style="dark" />
+          <RegisterNavigation />
+        </>
+      )}
     </>
   );
 }

@@ -11,6 +11,9 @@ export default function Input({
   borderColorRed,
   multilineHight = 100,
   errorLabel,
+  val,
+  hasLabel,
+
   ...props
 }) {
   const [isSecure, setIsSecure] = useState(secureTextEntry);
@@ -18,6 +21,8 @@ export default function Input({
   return (
     <View style={{ marginBottom: 20 }}>
       {/* Wrap everything in a parent view */}
+      {hasLabel && val && <Text style={styles.label}>{placeHolder}</Text>}
+
       <View
         style={[
           styles.container,
@@ -85,5 +90,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 15, // Aligns error with input field edges
 
     textAlign: "center",
+  },
+  label: {
+    fontSize: 15,
+    color: "black",
+    fontWeight: "bold",
   },
 });

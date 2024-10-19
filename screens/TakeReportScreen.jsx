@@ -6,6 +6,8 @@ import Button from "../components/UI/Button";
 import { useContext } from "react";
 import { AuthContext } from "../store/TokenContext.jsx";
 import { TakeComplaint } from "../utl/apis.js";
+import LoadingIndicator from "../components/UI/LoadingIndicator";
+import CustomAlert from "../components/UI/CustomAlert.jsx";
 export default function TakeReportScreen({ route, navigation }) {
   const authCtx = useContext(AuthContext);
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -18,6 +20,9 @@ export default function TakeReportScreen({ route, navigation }) {
   const [accused, setAccused] = useState("");
   const [complaintId, setComplaintId] = useState(route.params.subjectId);
   const { title, lat, lng } = route.params;
+  const [isLoading, setIsLoading] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   const [validation, setValidation] = useState({
     email: true,
@@ -92,7 +97,8 @@ export default function TakeReportScreen({ route, navigation }) {
       !buildingNumber ||
       !complaintDetails
     ) {
-      Alert.alert("Error", "Please fill out all fields before submitting.");
+      setAlertMessage("please fill all required fields");
+      setAlertVisible(true);
       return;
     }
 
@@ -117,6 +123,7 @@ export default function TakeReportScreen({ route, navigation }) {
 
     try {
       // Call the API to submit the complaint
+      setIsLoading(true);
       const response = await TakeComplaint(complaintData, authCtx.token); // Assuming you have the token in your auth context
 
       if (response.status === 200) {
@@ -124,14 +131,17 @@ export default function TakeReportScreen({ route, navigation }) {
         console.log("success");
       } else {
         console.log(response.data);
-        Alert.alert(
-          "Error",
-          response.data.message || "Failed to submit your complaint."
+        setAlertMessage(
+          response.data.detail || "Failed to submit your complaint."
         );
+        setAlertVisible(true);
       }
     } catch (error) {
-      Alert.alert("Error", "Something went wrong. Please try again.");
+      setAlertMessage("Something went wrong. Please try again.");
+      setAlertVisible(true);
       console.error("Complaint submission error:", error);
+    } finally {
+      setIsLoading(false);
     }
 
     console.log("Form submitted with:", complaintData);
@@ -145,60 +155,84 @@ export default function TakeReportScreen({ route, navigation }) {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.form}>
-        <Input
-          placeHolder={"رقم الهاتف"}
-          icon="call-outline"
-          onChangeText={(text) => setPhoneNumber(text)} // Handle phone number input
-          value={phoneNumber}
-          borderColorRed={validation.phoneNumber === false}
-        />
-        <Input
-          placeHolder={"البريد الالكتروني "}
-          icon="mail-outline"
-          onChangeText={(text) => setEmail(text)} // Handle phone number input
-          value={email}
-          borderColorRed={validation.email === false}
-        />
-        <Input
-          placeHolder={" أقرب معلم"}
-          icon="location-outline"
-          onChangeText={(text) => setNearestLocation(text)} // Handle street name input
-          value={nearestLocation}
-          borderColorRed={validation.nearestLocation === false}
-        />
-        <Input
-          placeHolder={"رقم المبنى"}
-          icon="home-outline"
-          onChangeText={(text) => setBuildingNumber(text)} // Handle building number input
-          value={buildingNumber}
-          borderColorRed={validation.buildingNumber === false}
-        />
-        <Input
-          placeHolder={"المتهم "}
-          icon="call-outline"
-          onChangeText={(text) => setAccused(text)} // Handle phone number input
-          value={accused}
-        />
-        <Input
-          placeHolder={"تفاصيل الشكوى"}
-          icon="document-text-outline"
-          multiline={true}
-          style={styles.textArea}
-          onChangeText={(text) => setComplaintDetails(text)} // Handle complaint details input
-          borderColorRed={validation.complaintDetails === false}
-        />
-      </View>
-      <View style={styles.location}>
-        <LocationPicker
-          lat={lat}
-          lng={lng}
-          onPickedLocationHandler={onPickedLocationHandler}
-        />
-      </View>
-      <Button onPress={onSubmitHandler} style={[{ marginBottom: 30 }]}>
-        ارسال
-      </Button>
+      {isLoading && <LoadingIndicator></LoadingIndicator>}
+      {!isLoading && (
+        <>
+          <CustomAlert
+            visible={alertVisible}
+            message={alertMessage}
+            onConfirm={() => setAlertVisible(false)}
+            error={true}
+          ></CustomAlert>
+          <View style={styles.form}>
+            <Input
+              placeHolder={"رقم الهاتف"}
+              icon="call-outline"
+              onChangeText={(text) => setPhoneNumber(text)} // Handle phone number input
+              value={phoneNumber}
+              borderColorRed={validation.phoneNumber === false}
+              hasLabel={true}
+              val={phoneNumber}
+            />
+            <Input
+              placeHolder={"البريد الالكتروني "}
+              icon="mail-outline"
+              onChangeText={(text) => setEmail(text)} // Handle phone number input
+              value={email}
+              borderColorRed={validation.email === false}
+              hasLabel={true}
+              val={email}
+            />
+            <Input
+              placeHolder={" أقرب معلم"}
+              icon="location-outline"
+              onChangeText={(text) => setNearestLocation(text)} // Handle street name input
+              value={nearestLocation}
+              borderColorRed={validation.nearestLocation === false}
+              hasLabel={true}
+              val={nearestLocation}
+            />
+            <Input
+              placeHolder={"رقم المبنى"}
+              icon="home-outline"
+              onChangeText={(text) => setBuildingNumber(text)} // Handle building number input
+              value={buildingNumber}
+              borderColorRed={validation.buildingNumber === false}
+              hasLabel={true}
+              val={buildingNumber}
+            />
+            <Input
+              placeHolder={"المتهم "}
+              icon="call-outline"
+              onChangeText={(text) => setAccused(text)} // Handle phone number input
+              value={accused}
+              hasLabel={true}
+              val={accused}
+            />
+            <Input
+              placeHolder={"تفاصيل الشكوى"}
+              icon="document-text-outline"
+              multiline={true}
+              style={styles.textArea}
+              onChangeText={(text) => setComplaintDetails(text)} // Handle complaint details input
+              borderColorRed={validation.complaintDetails === false}
+              hasLabel={true}
+              value={complaintDetails}
+              val={complaintDetails}
+            />
+          </View>
+          <View style={styles.location}>
+            <LocationPicker
+              lat={lat}
+              lng={lng}
+              onPickedLocationHandler={onPickedLocationHandler}
+            />
+          </View>
+          <Button onPress={onSubmitHandler} style={[{ marginBottom: 30 }]}>
+            ارسال
+          </Button>
+        </>
+      )}
     </ScrollView>
   );
 }

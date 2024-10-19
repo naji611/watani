@@ -5,41 +5,87 @@ import Input from "../components/UI/Input";
 import Button from "../components/UI/Button";
 import RegisterImage from "../components/UI/RegisterImage";
 import CustomAlert from "../components/UI/CustomAlert";
-
+import { ForgetPassword } from "../utl/apis";
+import LoadingIndicator from "../components/UI/LoadingIndicator";
 export default function ForgetPasswordScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [alertVisible, setAlertVisible] = useState(false);
-  return (
-    <View style={styles.screen}>
-      {/* <CustomAlert
-        visible={alertVisible}
-        message={
-          " lk fjdkslgnfjgnlndhjkdsnhgjkngdhkjfdnhjkn,.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbيرجى التأكد"
-        }
-        onConfirm={() => setAlertVisible(false)}
-      ></CustomAlert> */}
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertError, setAlertError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  function isValidEmail(email) {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email.trim());
+  }
 
-      <RegisterImage />
-      <View style={styles.container}>
-        <Text style={styles.text}>هل نسيت كلمة المرور</Text>
-        <Input
-          logo="mail-outline"
-          placeHolder="ادخل  بريدك الالكتروني"
-          value={email}
-          onChangeText={(val) => setEmail(val)}
-        />
-        <View style={styles.button}>
-          <Button
-            onPress={() => {
-              setAlertVisible(true);
-              // navigation.navigate("verifyEmailFromEmail");
-            }}
-          >
-            تأكيد
-          </Button>
-        </View>
-      </View>
-    </View>
+  function handleSubmit() {
+    if (!email || email.trim() === "") {
+      setAlertVisible(true);
+      setAlertMessage("Please enter your email");
+      setAlertError(true);
+    } else if (!isValidEmail(email)) {
+      setAlertVisible(true);
+      setAlertMessage("Please enter a valid email");
+      setAlertError(true);
+    } else {
+      setIsLoading(true);
+      ForgetPassword(email)
+        .then((response) => {
+          console.log(response.status);
+          if (!response.status) {
+            navigation.navigate("verifyEmailFromEmail");
+          } else if (response.status === 404) {
+            setAlertVisible(true);
+            setAlertMessage("Email not found, try another email!");
+            setAlertError(true);
+          } else {
+            setAlertVisible(true);
+            setAlertMessage(response.message);
+            setAlertError(true);
+          }
+        })
+        .catch((error) => {
+          setAlertVisible(true);
+          setAlertMessage("An error occurred. Please try again.");
+          setAlertError(true);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }
+
+  return (
+    <>
+      {isLoading && <LoadingIndicator></LoadingIndicator>}
+
+      {!isLoading && (
+        <>
+          <View style={styles.screen}>
+            <CustomAlert
+              visible={alertVisible}
+              message={alertMessage}
+              onConfirm={() => setAlertVisible(false)}
+              error={alertError}
+            ></CustomAlert>
+
+            <RegisterImage />
+            <View style={styles.container}>
+              <Text style={styles.text}>هل نسيت كلمة المرور</Text>
+              <Input
+                logo="mail-outline"
+                placeHolder="ادخل  بريدك الالكتروني"
+                value={email}
+                onChangeText={(val) => setEmail(val)}
+              />
+              <View style={styles.button}>
+                <Button onPress={handleSubmit}>تأكيد</Button>
+              </View>
+            </View>
+          </View>
+        </>
+      )}
+    </>
   );
 }
 

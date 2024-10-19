@@ -1,44 +1,55 @@
-import { View, Text, StyleSheet, ScrollView } from "react-native";
-import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
+import React, { useEffect, useState, useContext } from "react";
 import HeaderImage from "../components/UI/HeaderImage";
 import LoadingIndicator from "../components/UI/LoadingIndicator";
-import { useContext } from "react";
-import AuthContextProvider, { AuthContext } from "../store/TokenContext.jsx";
+import { AuthContext } from "../store/TokenContext.jsx";
 import { FetchComplaintsStatus } from "../utl/apis.js";
 
-const tracksReports = [];
-
-export default function TrackingScreen() {
+export default function TrackingScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
+  const [complaints, setComplaints] = useState([]);
+
   useEffect(() => {
     const fetchComplaintsStatus = async () => {
       try {
+        const userId = authCtx.userData.id;
         setLoading(true);
-        FetchComplaintsStatus(authCtx.token).then((response) => {
-          console.log(response);
-        });
+        const response = await FetchComplaintsStatus(authCtx.token, userId);
+        console.log(response[0]);
+        setComplaints(response);
       } catch (error) {
+        console.error(error);
       } finally {
         setLoading(false);
       }
     };
     fetchComplaintsStatus();
   }, [authCtx.token]);
+
+  const handleEdit = (reportData) => {
+    navigation.navigate("TakeReportScreen", { reportData, type: "edit" });
+  };
+
   return (
     <>
       {loading && <LoadingIndicator />}
-
       {!loading && (
         <View style={styles.screen}>
           <HeaderImage />
-          {tracksReports.length === 0 ? (
+          {complaints.length === 0 ? (
             <View style={styles.containerNot}>
               <Text style={styles.textNot}>لا يوجد لديك شكاوي </Text>
             </View>
           ) : (
             <ScrollView>
-              {tracksReports.map((report) => (
+              {complaints.map((report) => (
                 <View key={report.id} style={styles.report}>
                   <Text style={styles.reportTitle}>
                     <Text style={{ fontSize: 20 }}>رقم الشكوى: </Text>
@@ -58,25 +69,31 @@ export default function TrackingScreen() {
                       style={[
                         {
                           color:
-                            report.status === "مكتمل"
-                              ? "green"
-                              : report.status === "مرفوض"
+                            report.status === "Rejected"
                               ? "red"
-                              : report.status === "انتظار"
-                              ? "#FFC107"
+                              : report.status === "Registered"
+                              ? "green"
+                              : report.status === "Processing"
+                              ? "#FFC107" // amber color for processing
+                              : report.status === "Closed"
+                              ? "black" // black color for closed status
                               : "black", // default color if no match
-                          fontSize: 15,
-                          fontWeight: "bold",
                         },
+                        { fontSize: 15, fontWeight: "bold" },
                       ]}
                     >
                       {report.status}
                     </Text>
                   </Text>
-                  <Text style={styles.text}>
-                    <Text style={styles.bold}>الملاحظات: </Text>
-                    {report.comp}
-                  </Text>
+
+                  {report.status === "Registered" && (
+                    <TouchableOpacity
+                      style={styles.editButton}
+                      onPress={() => handleEdit(report)}
+                    >
+                      <Text style={styles.editButtonText}>تعديل</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               ))}
             </ScrollView>
@@ -125,5 +142,16 @@ const styles = StyleSheet.create({
   bold: {
     fontWeight: "bold",
     fontSize: 16,
+  },
+  editButton: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: "#4CAF50", // green color for edit button
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  editButtonText: {
+    color: "white",
+    fontWeight: "bold",
   },
 });
