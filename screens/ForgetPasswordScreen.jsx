@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import HeaderImage from "../components/UI/HeaderImage";
 import Input from "../components/UI/Input";
 import Button from "../components/UI/Button";
@@ -7,7 +7,9 @@ import RegisterImage from "../components/UI/RegisterImage";
 import CustomAlert from "../components/UI/CustomAlert";
 import { ForgetPassword } from "../utl/apis";
 import LoadingIndicator from "../components/UI/LoadingIndicator";
+import { LanguageContext } from "../store/languageContext";
 export default function ForgetPasswordScreen({ navigation }) {
+  const langCtx = useContext(LanguageContext);
   const [email, setEmail] = useState("");
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
@@ -21,11 +23,19 @@ export default function ForgetPasswordScreen({ navigation }) {
   function handleSubmit() {
     if (!email || email.trim() === "") {
       setAlertVisible(true);
-      setAlertMessage("Please enter your email");
+      setAlertMessage(
+        langCtx.language === "en"
+          ? "Please enter your email"
+          : "يرجى إدخال بريدك الإلكتروني"
+      );
       setAlertError(true);
     } else if (!isValidEmail(email)) {
       setAlertVisible(true);
-      setAlertMessage("Please enter a valid email");
+      setAlertMessage(
+        langCtx.language === "en"
+          ? "Please enter a valid email"
+          : "يرجى إدخال بريد إلكتروني صالح"
+      );
       setAlertError(true);
     } else {
       setIsLoading(true);
@@ -36,7 +46,11 @@ export default function ForgetPasswordScreen({ navigation }) {
             navigation.navigate("verifyEmailFromEmail");
           } else if (response.status === 404) {
             setAlertVisible(true);
-            setAlertMessage("Email not found, try another email!");
+            setAlertMessage(
+              langCtx.language === "en"
+                ? "Email not found, try another email!"
+                : "البريد الإلكتروني غير موجود، جرب بريدًا آخر!"
+            );
             setAlertError(true);
           } else {
             setAlertVisible(true);
@@ -71,10 +85,19 @@ export default function ForgetPasswordScreen({ navigation }) {
 
             <RegisterImage />
             <View style={styles.container}>
-              <Text style={styles.text}>هل نسيت كلمة المرور</Text>
+              <Text style={styles.text}>
+                {" "}
+                {langCtx.language === "ar"
+                  ? "هل نسيت كلمة المرور "
+                  : " Forget Your Password"}
+              </Text>
               <Input
                 logo="mail-outline"
-                placeHolder="ادخل  بريدك الالكتروني"
+                placeHolder={
+                  langCtx.language === "ar"
+                    ? " ادخل بريدك الالكتروني"
+                    : "  Enter your Email"
+                }
                 value={email}
                 onChangeText={(val) => setEmail(val)}
               />
@@ -104,7 +127,7 @@ const styles = StyleSheet.create({
     color: "black",
     textAlign: "center",
     fontWeight: "bold",
-    fontSize: 27,
+    fontSize: 20,
     marginBottom: 30,
     marginLeft: 130,
   },

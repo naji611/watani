@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Dimensions,
 } from "react-native";
 import React, { useState } from "react";
 import Input from "../components/UI/Input";
@@ -19,6 +20,7 @@ import { AuthContext } from "../store/TokenContext.jsx";
 import { LanguageContext } from "../store/languageContext.jsx";
 
 import CustomAlert from "../components/UI/CustomAlert.jsx";
+const { width, height } = Dimensions.get("window");
 
 export default function LoginScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
@@ -33,6 +35,7 @@ export default function LoginScreen({ navigation }) {
   });
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+
   function handleLogin() {
     validateInputs();
 
@@ -99,10 +102,10 @@ export default function LoginScreen({ navigation }) {
         });
     } else {
       if (langCtx.language === "ar") {
-        setAlertMessage(" يرجى تعبئة البيانات ");
+        setAlertMessage("  يرجى تعبئة البيانات بشكل صحيح");
         setAlertVisible(true);
       } else {
-        setAlertMessage(response.data.detail);
+        setAlertMessage("Please fill the fields correct!");
         setAlertVisible(true);
       }
     }
@@ -138,7 +141,14 @@ export default function LoginScreen({ navigation }) {
       {!isLoading && (
         <ScrollView style={styles.screen}>
           <RegisterImage />
-          <View style={[styles.tabs]}>
+          <View
+            style={[
+              styles.tabs,
+              {
+                left: langCtx.language === "en" ? width / 20 : width / 25,
+              },
+            ]}
+          >
             <TouchableOpacity
               onPress={() => navigation.navigate("SignUpScreen")}
               style={[
@@ -149,7 +159,9 @@ export default function LoginScreen({ navigation }) {
                 },
               ]}
             >
-              <Text style={styles.textTab}> حساب جديد </Text>
+              <Text style={styles.textTab}>
+                {langCtx.language === "ar" ? "حساب جديد" : "SignUp"}
+              </Text>
             </TouchableOpacity>
             <View
               style={[
@@ -160,12 +172,16 @@ export default function LoginScreen({ navigation }) {
                 },
               ]}
             >
-              <Text style={styles.textTab}>تسجيل الدخول</Text>
+              <Text style={styles.textTab}>
+                {langCtx.language === "ar" ? "تسجيل الدخول " : "Login"}
+              </Text>
             </View>
           </View>
           <View style={styles.form}>
             <Input
-              placeHolder={"اسم المستخدم "}
+              placeHolder={
+                langCtx.language === "ar" ? "اسم المستخدم " : "username"
+              }
               logo={"id"}
               keyboardType="numeric"
               borderColorRed={validation.userName === false}
@@ -175,8 +191,9 @@ export default function LoginScreen({ navigation }) {
             ></Input>
 
             <Input
-              placeHolder={" كلمة المرور"}
-              logo={"lock-closed"}
+              placeHolder={
+                langCtx.language === "ar" ? " كلمة المرور" : "password"
+              }
               secureTextEntry={true}
               borderColorRed={validation.password === false}
               onChangeText={(val) => setPassword(val)}
@@ -189,10 +206,18 @@ export default function LoginScreen({ navigation }) {
               navigation.navigate("ForgetPasswordScreen");
             }}
           >
-            <Text style={styles.forgetText}>هل نسيت كلمة المرور؟</Text>
+            <Text style={[styles.forgetText, {}]}>
+              {" "}
+              {langCtx.language === "ar"
+                ? "هل نسيت كلمة المرور؟"
+                : "Forget Password?"}
+            </Text>
           </TouchableOpacity>
           <View style={styles.onButton}>
-            <Button onPress={handleLogin}>الدخول </Button>
+            <Button onPress={handleLogin}>
+              {" "}
+              {langCtx.language === "ar" ? "الدخول " : " Sign in"}
+            </Button>
           </View>
         </ScrollView>
       )}
@@ -215,9 +240,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     position: "absolute",
     top: 140,
-    left: 40,
   },
   tab: {
+    width: width / 2.25,
     borderBottomWidth: 5,
     alignItems: "center",
     justifyContent: "center",
@@ -225,11 +250,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   textTab: {
-    fontSize: 20,
+    fontSize: width < 360 ? 15 : 20,
     fontWeight: "bold",
+    marginBottom: 10,
   },
   forgetContainer: {
-    marginRight: 230,
+    marginHorizontal: 40,
   },
   forgetText: {
     fontSize: 15,

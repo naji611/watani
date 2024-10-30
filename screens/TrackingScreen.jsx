@@ -4,37 +4,44 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Dimensions,
 } from "react-native";
-import React, { useEffect, useState, useContext } from "react";
+import React, { useState, useContext, useCallback } from "react";
 import HeaderImage from "../components/UI/HeaderImage";
 import LoadingIndicator from "../components/UI/LoadingIndicator";
 import { AuthContext } from "../store/TokenContext.jsx";
 import { FetchComplaintsStatus } from "../utl/apis.js";
+import { useFocusEffect } from "@react-navigation/native";
+import { LanguageContext } from "../store/languageContext.jsx";
+
+const { width, height } = Dimensions.get("window");
 
 export default function TrackingScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
+  const langCtx = useContext(LanguageContext);
   const [loading, setLoading] = useState(true);
   const [complaints, setComplaints] = useState([]);
 
-  useEffect(() => {
-    const fetchComplaintsStatus = async () => {
-      try {
-        const userId = authCtx.userData.id;
-        setLoading(true);
-        const response = await FetchComplaintsStatus(authCtx.token, userId);
-        console.log(response[0]);
-        setComplaints(response);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchComplaintsStatus();
-  }, [authCtx.token]);
+  useFocusEffect(
+    useCallback(() => {
+      const fetchComplaintsStatus = async () => {
+        try {
+          const userId = authCtx.userData.id;
+          setLoading(true);
+          const response = await FetchComplaintsStatus(authCtx.token, userId);
+          setComplaints(response);
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchComplaintsStatus();
+    }, [authCtx.token, authCtx.userData.id])
+  );
 
   const handleEdit = (reportData) => {
-    navigation.navigate("TakeReportScreen", { reportData, type: "edit" });
+    navigation.navigate("UpdateComplaintsScreen", { reportData });
   };
 
   return (
@@ -45,28 +52,51 @@ export default function TrackingScreen({ navigation }) {
           <HeaderImage />
           {complaints.length === 0 ? (
             <View style={styles.containerNot}>
-              <Text style={styles.textNot}>لا يوجد لديك شكاوي </Text>
+              <Text style={styles.textNot}>
+                {langCtx.language === "ar"
+                  ? " لا يوجد لديك شكاوي"
+                  : "No Complaints Yet"}
+              </Text>
             </View>
           ) : (
-            <ScrollView>
+            <ScrollView contentContainerStyle={styles.scrollViewContent}>
               {complaints.map((report) => (
                 <View key={report.id} style={styles.report}>
                   <Text style={styles.reportTitle}>
-                    <Text style={{ fontSize: 20 }}>رقم الشكوى: </Text>
+                    <Text style={styles.complaintLabel}>
+                      {langCtx.language === "ar"
+                        ? "   رقم الشكوى"
+                        : " Complaints Number"}
+                      :{" "}
+                    </Text>
                     {report.id}
                   </Text>
                   <Text style={styles.text}>
-                    <Text style={styles.bold}>نوع الشكوى: </Text>
-                    {report.title}
+                    <Text style={styles.bold}>
+                      {langCtx.language === "ar"
+                        ? " نوع الشكوى"
+                        : " Complaints Type"}
+                      :{" "}
+                    </Text>
+                    <Text>
+                      {langCtx.language === "ar"
+                        ? report.subject.arabicName
+                        : report.subject.name}
+                    </Text>
                   </Text>
                   <Text style={styles.text}>
-                    <Text style={styles.bold}>التاريخ: </Text>
+                    <Text style={styles.bold}>
+                      {langCtx.language === "ar" ? " التاريخ " : " Date"}:{" "}
+                    </Text>
                     {report.date}
                   </Text>
                   <Text style={styles.text}>
-                    <Text style={styles.bold}>الحالة: </Text>
+                    <Text style={styles.bold}>
+                      {langCtx.language === "ar" ? " الحالة " : " Status "}:{" "}
+                    </Text>
                     <Text
                       style={[
+                        styles.statusText,
                         {
                           color:
                             report.status === "Rejected"
@@ -74,12 +104,11 @@ export default function TrackingScreen({ navigation }) {
                               : report.status === "Registered"
                               ? "green"
                               : report.status === "Processing"
-                              ? "#FFC107" // amber color for processing
+                              ? "#FFC107"
                               : report.status === "Closed"
-                              ? "black" // black color for closed status
-                              : "black", // default color if no match
+                              ? "black"
+                              : "black",
                         },
-                        { fontSize: 15, fontWeight: "bold" },
                       ]}
                     >
                       {report.status}
@@ -91,7 +120,9 @@ export default function TrackingScreen({ navigation }) {
                       style={styles.editButton}
                       onPress={() => handleEdit(report)}
                     >
-                      <Text style={styles.editButtonText}>تعديل</Text>
+                      <Text style={styles.editButtonText}>
+                        {langCtx.language === "ar" ? "تعديل " : "Edit"}
+                      </Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -111,17 +142,17 @@ const styles = StyleSheet.create({
   },
   containerNot: {
     alignItems: "center",
-    marginVertical: 30,
+    marginVertical: height * 0.03,
   },
   textNot: {
-    fontSize: 20,
+    fontSize: width * 0.05,
     color: "#000000",
   },
   report: {
-    marginVertical: 10,
+    marginVertical: height * 0.01,
     backgroundColor: "#fff",
-    marginHorizontal: 20,
-    padding: 15,
+    marginHorizontal: width * 0.05,
+    padding: width * 0.05,
     borderRadius: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -131,27 +162,39 @@ const styles = StyleSheet.create({
   },
   reportTitle: {
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: width * 0.045,
     marginBottom: 5,
   },
+  complaintLabel: {
+    fontSize: width * 0.05,
+  },
   text: {
-    fontSize: 14,
+    fontSize: width * 0.04,
     color: "#333",
     marginBottom: 5,
   },
   bold: {
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: width * 0.045,
+  },
+  statusText: {
+    fontSize: width * 0.04,
+    fontWeight: "bold",
   },
   editButton: {
     marginTop: 10,
-    padding: 10,
-    backgroundColor: "#4CAF50", // green color for edit button
+    paddingVertical: height * 0.015,
+    paddingHorizontal: width * 0.1,
+    backgroundColor: "#4CAF50",
     borderRadius: 5,
     alignItems: "center",
   },
   editButtonText: {
     color: "white",
     fontWeight: "bold",
+    fontSize: width * 0.032,
+  },
+  scrollViewContent: {
+    paddingBottom: height * 0.1, // Add some padding at the bottom
   },
 });

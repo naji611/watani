@@ -1,9 +1,19 @@
 import { View, Text, StyleSheet, Alert } from "react-native";
-import React, { useCallback, useLayoutEffect, useState } from "react";
+import React, {
+  useCallback,
+  useLayoutEffect,
+  useState,
+  useContext,
+} from "react";
 import MapView, { Marker } from "react-native-maps";
 import Button from "../components/UI/Button";
-
-export default function Map({ navigation }) {
+import CustomAlert from "../components/UI/CustomAlert.jsx";
+import { LanguageContext } from "../store/languageContext";
+export default function Map({ navigation, route }) {
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertError, setAlertError] = useState(false);
+  const langCtx = useContext(LanguageContext);
   const [selectedLocation, setSelectedLocation] = useState();
   const region = {
     latitude: 31.916898343327365,
@@ -19,45 +29,62 @@ export default function Map({ navigation }) {
   }
   const savePickedLocationHandler = useCallback(() => {
     if (!selectedLocation) {
-      Alert.alert("pick a location first!");
+      setAlertMessage(
+        langCtx.language === "en"
+          ? "Pick a location first!"
+          : "يرجى اختيار الموقع أولاً!"
+      );
+      setAlertVisible(true);
+      setAlertError(true);
       return;
     }
 
-    navigation.navigate("TakeReportScreen", {
-      pickedLat: selectedLocation.lat,
-      pickedLng: selectedLocation.lng,
-    });
+    navigation.navigate(
+      route.params.isEdit ? "UpdateComplaintsScreen" : "TakeReportScreen",
+      {
+        pickedLat: selectedLocation.lat,
+        pickedLng: selectedLocation.lng,
+      }
+    );
   }, [navigation, selectedLocation]);
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerTitle: "الخريطة",
+      headerTitle: langCtx.language === "ar" ? "الخريطة" : "Map",
       headerRight: () => (
         <Button
           onPress={savePickedLocationHandler}
           style={[{ marginBottom: 10 }]}
         >
-          حفظ
+          {langCtx.language === "ar" ? "حفظ" : "Save"}
         </Button>
       ),
     });
   }, [navigation, savePickedLocationHandler]);
 
   return (
-    <MapView
-      initialRegion={region}
-      style={styles.container}
-      onPress={selectLocationOnMap}
-    >
-      {selectedLocation && (
-        <Marker
-          title="Picked Location"
-          coordinate={{
-            latitude: selectedLocation.lat,
-            longitude: selectedLocation.lng,
-          }}
-        />
-      )}
-    </MapView>
+    <>
+      <CustomAlert
+        visible={alertVisible}
+        message={alertMessage}
+        onConfirm={() => setAlertVisible(false)}
+        error={alertError}
+      ></CustomAlert>
+      <MapView
+        initialRegion={region}
+        style={styles.container}
+        onPress={selectLocationOnMap}
+      >
+        {selectedLocation && (
+          <Marker
+            title="Picked Location"
+            coordinate={{
+              latitude: selectedLocation.lat,
+              longitude: selectedLocation.lng,
+            }}
+          />
+        )}
+      </MapView>
+    </>
   );
 }
 

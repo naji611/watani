@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import RegisterImage from "../components/UI/RegisterImage";
-import { useContext } from "react";
-import AuthContextProvider, { AuthContext } from "../store/TokenContext.jsx";
-export default function SuccessComplaintScreen({ navigation, route }) {
-  const authCtx = useContext(AuthContext);
+import { LanguageContext } from "../store/languageContext"; // Assuming you have this context
+
+export default function SuccessComplaintScreen({ navigation }) {
+  const langCtx = useContext(LanguageContext);
+
   const handleNextPress = () => {
     navigation.navigate("HomeTabs");
   };
@@ -14,13 +14,23 @@ export default function SuccessComplaintScreen({ navigation, route }) {
     <View style={styles.screen}>
       <View style={styles.container}>
         <Ionicons name="checkmark-circle" style={styles.icon} />
-        <Text style={styles.title}> تمت العملية بنجاح!</Text>
+        <Text style={styles.title}>
+          {langCtx.language === "ar"
+            ? "تمت العملية بنجاح!"
+            : "Operation Successful!"}
+        </Text>
         <Text style={styles.message}>
-          تم ارسال طلبك بنجاح. يمكنك الآن متابعة طلبك من خلال تتبع الطلبات .
+          {langCtx.language === "ar"
+            ? "تم ارسال طلبك بنجاح. يمكنك الآن متابعة طلبك من خلال تتبع الطلبات."
+            : "Your request has been submitted successfully. You can now track your request."}
         </Text>
 
         <TouchableOpacity style={styles.button} onPress={handleNextPress}>
-          <Text style={styles.buttonText}>الذهاب إلى الصفحة الرئيسية</Text>
+          <Text style={styles.buttonText}>
+            {langCtx.language === "ar"
+              ? "الذهاب إلى الصفحة الرئيسية"
+              : "Go to Home Page"}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

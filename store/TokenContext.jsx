@@ -121,7 +121,7 @@ export default function AuthContextProvider({ children }) {
         message={
           languageCtx.language === "en"
             ? "Your session has expired. Please log in again."
-            : "انتهت المعلة الخاصة بك يرجى اعادة تسجيل الدخول!"
+            : "انتهت المهلة الخاصة بك. يرجى اعادة تسجيل الدخول!"
         }
         visible={showAlert}
         onConfirm={() => {

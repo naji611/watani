@@ -1,6 +1,8 @@
-import { View, TextInput, StyleSheet, Text } from "react-native";
+import { View, TextInput, StyleSheet, Text, Dimensions } from "react-native";
 import React, { useState } from "react";
 import { Ionicons, AntDesign } from "@expo/vector-icons";
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 export default function Input({
   placeHolder,
@@ -13,21 +15,19 @@ export default function Input({
   errorLabel,
   val,
   hasLabel,
-
   ...props
 }) {
   const [isSecure, setIsSecure] = useState(secureTextEntry);
 
   return (
-    <View style={{ marginBottom: 20 }}>
-      {/* Wrap everything in a parent view */}
+    <View style={{ marginBottom: screenHeight * 0.02 }}>
       {hasLabel && val && <Text style={styles.label}>{placeHolder}</Text>}
 
       <View
         style={[
           styles.container,
           {
-            width: width === "small" ? 170 : "100%",
+            width: width === "small" ? screenWidth * 0.45 : screenWidth * 0.85,
             borderColor: borderColorRed ? "red" : "green",
           },
         ]}
@@ -69,31 +69,32 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderRadius: 10,
-    marginVertical: 5, // Reduced vertical margin for tighter grouping
-    marginHorizontal: 10,
+    marginVertical: screenHeight * 0.01,
+    marginHorizontal: screenWidth * 0.01,
   },
   input: {
-    padding: 15, // Reduced padding for more compact input
+    paddingVertical: screenHeight * 0.015,
+    paddingHorizontal: screenWidth * 0.03,
     flex: 1,
     color: "black",
     fontWeight: "bold",
   },
   icon: {
-    fontSize: 30,
+    fontSize: screenWidth * 0.075,
     color: "green",
-    paddingHorizontal: 10,
+    paddingHorizontal: screenWidth * 0.025,
   },
   error: {
     color: "red",
-    fontSize: 10,
-    marginTop: 5, // Space between the input field and the error label
-    marginHorizontal: 15, // Aligns error with input field edges
-
+    fontSize: screenHeight * 0.015,
+    marginTop: screenHeight * 0.005,
+    marginHorizontal: screenWidth * 0.05,
     textAlign: "center",
   },
   label: {
-    fontSize: 15,
+    fontSize: screenHeight * 0.02,
     color: "black",
     fontWeight: "bold",
+    marginHorizontal: screenWidth * 0.05,
   },
 });

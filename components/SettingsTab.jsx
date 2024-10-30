@@ -1,18 +1,17 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { TouchableOpacity } from "react-native";
 
 export default function SettingsTab({ title, subTitle, icon, onPress }) {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      <Ionicons
-        name="caret-back-outline"
-        color="green"
-        size={24}
-        style={styles.arrowIcon}
-      />
       <View style={styles.content}>
+        <Ionicons
+          name="caret-back-outline"
+          color="green"
+          size={24}
+          style={styles.arrowIcon}
+        />
         <View style={styles.textContainer}>
           <Text style={styles.title}>{title}</Text>
           {subTitle && <Text style={styles.subTitle}>{subTitle}</Text>}
@@ -25,25 +24,26 @@ export default function SettingsTab({ title, subTitle, icon, onPress }) {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row", // To align the text and the arrow in the same row
-    justifyContent: "space-between", // Space out the text and arrow icon
-    backgroundColor: "#C5C0C0", // Changed to a more modern gray shade
-    padding: 15,
     marginVertical: 10,
     marginHorizontal: 20,
     borderRadius: 10,
-    alignItems: "center", // Vertically center items
-    minHeight: 80,
+    overflow: "hidden", // Ensure that content doesn't overflow
   },
   content: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: "row", // Align text and icons in the same row
+    justifyContent: "space-between", // Space out the text and arrow icon
+    backgroundColor: "#C5C0C0", // Modern gray shade
+    padding: 20, // Increased padding for a larger tap area
+    alignItems: "center", // Vertically center items
+    minHeight: 100, // Increased minimum height
   },
   icon: {
     marginLeft: 10,
   },
   textContainer: {
     flexDirection: "column",
+    flex: 1, // Allow the text container to grow
+    justifyContent: "center", // Center text vertically
   },
   title: {
     fontSize: 18,
@@ -53,11 +53,11 @@ const styles = StyleSheet.create({
   },
   subTitle: {
     fontSize: 14,
-    color: "#000", // Light gray for the subtitle
+    color: "#000", // Color for the subtitle
     marginTop: 4,
     marginLeft: 10,
   },
   arrowIcon: {
-    marginLeft: 10,
+    marginRight: 10, // Change to right margin for proper spacing
   },
 });

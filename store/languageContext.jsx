@@ -1,37 +1,38 @@
 import React, { createContext, useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Create the context
 export const LanguageContext = createContext({
   language: "",
   toggleLanguage: () => {},
 });
 
-// Language translations
-// const translations = {
-//   en: {
-//     welcome: "Welcome",
-//     changeLanguage: "Switch to Arabic",
-//     theme: "Theme",
-//   },
-//   ar: {
-//     welcome: "مرحبا",
-//     changeLanguage: "التبديل إلى الإنجليزية",
-//     theme: "الثيم",
-//   },
-// };
-
-// Language provider component
 export default function LanguageContextProvider({ children }) {
   const [language, setLanguage] = useState("ar"); // Default to English
 
-  // Function to toggle between languages
+  useEffect(() => {
+    const loadLanguage = async () => {
+      const storedLanguage = await AsyncStorage.getItem("language");
+
+      if (storedLanguage) {
+        console.log("set to :", storedLanguage);
+        setLanguage(storedLanguage);
+      }
+    };
+
+    loadLanguage();
+  }, []);
+
   const toggleLanguage = () => {
-    setLanguage((prevLang) => (prevLang === "en" ? "ar" : "en"));
+    setLanguage((prevLang) => {
+      const newLang = prevLang === "en" ? "ar" : "en";
+      console.log("store to :", newLang);
+      AsyncStorage.setItem("language", newLang);
+      return newLang;
+    });
   };
 
   const value = {
     language,
-    //    translations: translations[language], // Current language translations
     toggleLanguage,
   };
 

@@ -19,6 +19,10 @@ const fetchComplaintsStatusUrl = "http://watani.runasp.net/api/v1/Complaints";
 const forgetPasswordUrl =
   "http://watani.runasp.net/api/v1/Authentication/reset-password-token";
 
+const fetchMunicipalities = (id) =>
+  `http://watani.runasp.net/api/v1/Municipalities?governorateId=${id}`;
+const UpdateComplaintsUrl = (id) =>
+  `http://watani.runasp.net/api/v1/Complaints/${id}`;
 // General function to handle API calls with error handling
 async function apiPostRequest(url, data) {
   try {
@@ -176,6 +180,55 @@ export async function ForgetPassword(email) {
       };
     } else {
       console.log(error);
+      return {
+        status: 500,
+        data: { message: "An unknown error occurred" },
+      };
+    }
+  }
+}
+export async function FetchMunicipalities(MunicipalitiesId) {
+  try {
+    const response = await axios.get(fetchMunicipalities(MunicipalitiesId), {});
+    return response;
+  } catch (error) {
+    if (error.response) {
+      return {
+        status: error.response.status,
+        data: error.response.data,
+      };
+    } else {
+      return {
+        status: 500,
+        data: { message: "An unknown error occurred" },
+      };
+    }
+  }
+}
+
+// Assuming UpdateComplaintsUrl is a function that generates the URL
+export async function UpdateComplaints(id, complaintData, token) {
+  try {
+    const response = await axios.put(
+      UpdateComplaintsUrl(id),
+      complaintData, // Pass complaintData directly
+
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return response;
+  } catch (error) {
+    if (error.response) {
+      return {
+        status: error.response.status,
+        data: error.response.data,
+      };
+    } else {
       return {
         status: 500,
         data: { message: "An unknown error occurred" },

@@ -1,19 +1,25 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Dimensions } from "react-native";
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useContext } from "react";
 import { AuthContext } from "../store/TokenContext.jsx";
+import { LanguageContext } from "../store/languageContext.jsx";
+
+const { width } = Dimensions.get("window");
 
 export default function PersonalDetails() {
   const authCtx = useContext(AuthContext);
-  console.log(authCtx.userData);
+  const langCtx = useContext(LanguageContext);
+
   return (
     <View style={styles.container}>
       <View style={styles.card}>
         <View style={styles.row}>
           <Ionicons name="person-outline" style={styles.icon} />
           <View style={styles.textContainer}>
-            <Text style={styles.label}>الاسم</Text>
+            <Text style={styles.label}>
+              {langCtx.language === "ar" ? "الاسم" : "Name"}
+            </Text>
             <Text style={styles.value}>{authCtx.userData.name}</Text>
           </View>
         </View>
@@ -24,18 +30,25 @@ export default function PersonalDetails() {
           <Ionicons name="card-outline" style={styles.icon} />
           <View style={styles.textContainer}>
             {authCtx.userData.userType === "ForeignUser" && (
-              <Text style={styles.label}>الرقم الشخصي</Text>
+              <Text style={styles.label}>
+                {langCtx.language === "ar" ? "الرقم الشخصي" : "Personal Number"}
+              </Text>
             )}
             {authCtx.userData.userType === "JordanianWomenChild" && (
-              <Text style={styles.label}>رقم الوثيقة</Text>
+              <Text style={styles.label}>
+                {langCtx.language === "ar" ? "رقم الوثيقة" : "Document Number"}
+              </Text>
             )}
             {authCtx.userData.userType === "JordanianUser" && (
-              <Text style={styles.label}>الرقم الوطني</Text>
+              <Text style={styles.label}>
+                {langCtx.language === "ar" ? "الرقم الوطني" : "Nationality Id"}
+              </Text>
             )}
             {authCtx.userData.userType === "GazaSon" && (
-              <Text style={styles.label}>رقم الملف</Text>
+              <Text style={styles.label}>
+                {langCtx.language === "ar" ? "الرقم الملف" : "File Number"}
+              </Text>
             )}
-
             <Text style={styles.value}>{authCtx.userData.primaryNumber}</Text>
           </View>
         </View>
@@ -45,7 +58,9 @@ export default function PersonalDetails() {
         <View style={styles.row}>
           <Ionicons name="call-outline" style={styles.icon} />
           <View style={styles.textContainer}>
-            <Text style={styles.label}>رقم الهاتف</Text>
+            <Text style={styles.label}>
+              {langCtx.language === "ar" ? "رقم الهاتف" : "Phone Number"}
+            </Text>
             <Text style={styles.value}>{authCtx.userData.phoneNumber}</Text>
           </View>
         </View>
@@ -55,7 +70,9 @@ export default function PersonalDetails() {
         <View style={styles.row}>
           <Ionicons name="location-outline" style={styles.icon} />
           <View style={styles.textContainer}>
-            <Text style={styles.label}>المدينة</Text>
+            <Text style={styles.label}>
+              {langCtx.language === "ar" ? " المدينة" : " City"}
+            </Text>
             <Text style={styles.value}>{authCtx.userData.city}</Text>
           </View>
         </View>
@@ -65,22 +82,22 @@ export default function PersonalDetails() {
         <View style={styles.row}>
           <Ionicons name="mail-outline" style={styles.icon} />
           <View style={styles.textContainer}>
-            <Text style={[styles.label, ,]}>البريد الإلكتروني</Text>
+            <Text style={styles.label}>
+              {langCtx.language === "ar" ? "البريد الإلكتروني" : " Email"}
+            </Text>
             <Text
-              style={[
-                {
-                  color:
-                    authCtx.userData.isEmailConfirmed === "True"
-                      ? "green"
-                      : "red",
-                },
-              ]}
+              style={{
+                color:
+                  authCtx.userData.isEmailConfirmed === "True"
+                    ? "green"
+                    : "red",
+              }}
             >
               {authCtx.userData.isEmailConfirmed === "True"
-                ? " verified"
+                ? "verified"
                 : "Not verified"}
             </Text>
-            <Text style={[styles.value]}>{authCtx.userData.email}</Text>
+            <Text style={styles.value}>{authCtx.userData.email}</Text>
           </View>
         </View>
       </View>
@@ -91,7 +108,7 @@ export default function PersonalDetails() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 15,
+    paddingHorizontal: width * 0.04, // Use percentage of width for responsiveness
     paddingVertical: 20,
     backgroundColor: "#f9f9f9",
   },
@@ -99,7 +116,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 12,
     paddingVertical: 20,
-    paddingHorizontal: 15,
+    paddingHorizontal: width * 0.04, // Use percentage of width for responsiveness
     marginVertical: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
@@ -114,9 +131,9 @@ const styles = StyleSheet.create({
     alignItems: "center", // Align vertically to the center
   },
   icon: {
-    fontSize: 28,
+    fontSize: width * 0.08, // Adjust icon size based on width
     color: "#4CAF50",
-    marginRight: 15,
+    marginRight: width * 0.04, // Use percentage of width for responsiveness
     marginTop: 20,
   },
   textContainer: {
@@ -124,12 +141,12 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start", // Align text to the start
   },
   label: {
-    fontSize: 16,
+    fontSize: width * 0.045, // Adjust font size based on width
     fontWeight: "bold",
     color: "#333",
   },
   value: {
-    fontSize: 16,
+    fontSize: width * 0.045, // Adjust font size based on width
     color: "#666",
     marginTop: 4,
     paddingBottom: 5,

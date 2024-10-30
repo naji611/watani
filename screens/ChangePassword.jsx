@@ -7,14 +7,19 @@ import CustomAlert from "../components/UI/CustomAlert";
 import { ChangePassword } from "../utl/apis";
 import { useContext } from "react";
 import { AuthContext } from "../store/TokenContext.jsx";
-
+import { LanguageContext } from "../store/languageContext.jsx";
+import LoadingIndicator from "../components/UI/LoadingIndicator.jsx";
 export default function ChangePasswordScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
+
+  const langCtx = useContext(LanguageContext);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [modelMessage, setModelMessage] = useState("something Wrong");
   const [modelVisible, setModelVisible] = useState(false);
+  const [modelError, setModelError] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [validation, setValidation] = useState({
     oldPassword: true,
     newPassword: true,
@@ -22,6 +27,19 @@ export default function ChangePasswordScreen({ navigation }) {
   });
   const handleResetPassword = () => {
     validateInputs();
+
+    if (newPassword !== confirmPassword) {
+      setModelMessage("the confirm password is not match ");
+      setModelError(true);
+      setModelVisible(true);
+      return;
+    }
+    if (newPassword === oldPassword) {
+      setModelMessage("you must chose  a new password ");
+      setModelError(true);
+      setModelVisible(true);
+      return;
+    }
     if (
       validation.newPassword &&
       validation.confirmPassword &&
@@ -29,30 +47,35 @@ export default function ChangePasswordScreen({ navigation }) {
     ) {
       // Logic for resetting the password
       console.log(newPassword, oldPassword, confirmPassword);
+      setLoading(true);
       ChangePassword(
         { newPassword, oldPassword, email: authCtx.userData.email },
         authCtx.token
-      ).then((response) => {
-        if (response.status === 204) {
-          setModelMessage("Password Changed Successfully");
-          setModelVisible(true);
-          navigation.navigate("HomeTabs");
-        } else {
-          if (validation.newPassword !== validation.confirmPassword) {
-            setModelMessage("the confirm password is not match ");
-
+      )
+        .then((response) => {
+          if (response.status === 204) {
+            setModelMessage("Password Changed Successfully");
             setModelVisible(true);
+          } else {
+            console.log(response);
+            setModelMessage("Something went wrong");
+            setModelVisible(true);
+            setModelError(true);
           }
-          console.log(response);
+        })
+        .catch((err) => {
+          console.log(err);
           setModelMessage("Something went wrong");
           setModelVisible(true);
-        }
-      });
+          setModelError(true);
+        })
+        .finally(() => setLoading(false));
 
       console.log("valid inputs");
     } else {
       setModelMessage("please fill all fields");
       setModelVisible(true);
+      setModelError(true);
     }
   };
   function validateInputs() {
@@ -78,7 +101,6 @@ export default function ChangePasswordScreen({ navigation }) {
     if (
       confirmPassword.length === 0 ||
       confirmPassword === null ||
-      newPassword !== confirmPassword ||
       !passwordRegex.test(confirmPassword)
     ) {
       setValidation((prev) => ({ ...prev, confirmPassword: false }));
@@ -92,36 +114,66 @@ export default function ChangePasswordScreen({ navigation }) {
       <CustomAlert
         visible={modelVisible}
         message={modelMessage}
-        onConfirm={() => setModelVisible(false)}
-      ></CustomAlert>
-      <RegisterImage />
-      <View style={styles.container}>
-        <Text style={styles.text}>إعادة تعيين كلمة المرور</Text>
-        <Input
-          placeHolder="ادخل كلمة المرور القديمة"
-          value={oldPassword}
-          onChangeText={(val) => setOldPassword(val)}
-          secureTextEntry
-          borderColorRed={validation.oldPassword === false}
-        />
-        <Input
-          placeHolder="ادخل كلمة المرور الجديدة"
-          value={newPassword}
-          onChangeText={(val) => setNewPassword(val)}
-          secureTextEntry
-          borderColorRed={validation.newPassword === false}
-        />
-        <Input
-          placeHolder="تأكيد كلمة المرور الجديدة"
-          value={confirmPassword}
-          onChangeText={(val) => setConfirmPassword(val)}
-          secureTextEntry
-          borderColorRed={validation.confirmPassword === false}
-        />
-        <View style={styles.button}>
-          <Button onPress={handleResetPassword}>إعادة تعيين</Button>
-        </View>
-      </View>
+        error={modelError}
+        onConfirm={() => {
+          setModelVisible(false);
+          if (!modelError) {
+            navigation.navigate("HomeTabs");
+          }
+        }}
+      />
+
+      {loading && <LoadingIndicator></LoadingIndicator>}
+      {!loading && (
+        <>
+          <RegisterImage />
+          <View style={styles.container}>
+            <Text style={styles.text}>
+              {langCtx.language === "ar"
+                ? "إعادة تعيين كلمة المرور"
+                : "Change Password"}
+            </Text>
+            <Input
+              placeHolder={
+                langCtx.language === "ar"
+                  ? "ادخل كلمة المرور القديمة"
+                  : "Enter old password"
+              }
+              value={oldPassword}
+              onChangeText={(val) => setOldPassword(val)}
+              secureTextEntry
+              borderColorRed={validation.oldPassword === false}
+            />
+            <Input
+              placeHolder={
+                langCtx.language === "ar"
+                  ? "ادخل كلمة المرور الجديدة"
+                  : "Enter new password"
+              }
+              value={newPassword}
+              onChangeText={(val) => setNewPassword(val)}
+              secureTextEntry
+              borderColorRed={validation.newPassword === false}
+            />
+            <Input
+              placeHolder={
+                langCtx.language === "ar"
+                  ? "تأكيد كلمة المرور الجديدة"
+                  : "Confirm new password"
+              }
+              value={confirmPassword}
+              onChangeText={(val) => setConfirmPassword(val)}
+              secureTextEntry
+              borderColorRed={validation.confirmPassword === false}
+            />
+            <View style={styles.button}>
+              <Button onPress={handleResetPassword}>
+                {langCtx.language === "ar" ? "إعادة تعيين" : "Reset"}
+              </Button>
+            </View>
+          </View>
+        </>
+      )}
     </View>
   );
 }

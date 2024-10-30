@@ -7,15 +7,14 @@ import React, {
 } from "react";
 import Input from "../components/UI/Input";
 import LocationPicker from "../components/location/LocationPicker";
-import { Picker } from "@react-native-picker/picker";
 import Button from "../components/UI/Button";
 import { useContext } from "react";
 import { AuthContext } from "../store/TokenContext.jsx";
-import { FetchMunicipalities, TakeComplaint } from "../utl/apis.js";
+import { FetchMunicipalities, UpdateComplaints } from "../utl/apis.js";
 import LoadingIndicator from "../components/UI/LoadingIndicator";
 import CustomAlert from "../components/UI/CustomAlert.jsx";
 import { LanguageContext } from "../store/languageContext.jsx";
-export default function TakeReportScreen({ route, navigation }) {
+export default function UpdateComplaintsScreen({ route, navigation }) {
   const authCtx = useContext(AuthContext);
   const langCtx = useContext(LanguageContext);
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -23,15 +22,16 @@ export default function TakeReportScreen({ route, navigation }) {
   const [nearestLocation, setNearestLocation] = useState("");
   const [buildingNumber, setBuildingNumber] = useState(""); // Added building number state
   const [complaintDetails, setComplaintDetails] = useState("");
-  const [city, setCity] = useState("");
   const [email, setEmail] = useState(authCtx.userData.email);
   const [accused, setAccused] = useState("");
-  const [complaintId, setComplaintId] = useState(route.params.subjectId);
-  const { title, lat, lng, reportData, type } = route.params;
+  const [complaintId, setComplaintId] = useState();
+  const [reportData, setReportData] = useState(route.params?.reportData || {});
+
   const [isLoading, setIsLoading] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
-  const [isEditing, setIsEditing] = useState(type === "edit");
+  const [city, setCity] = useState("");
+  const [shouldLoadLocation, setShouldLoadLocation] = useState(false);
   const [validation, setValidation] = useState({
     email: true,
     phoneNumber: true,
@@ -40,34 +40,64 @@ export default function TakeReportScreen({ route, navigation }) {
     complaintDetails: true,
     accused: true,
   });
-  const [fetchedComplaints, setFetchedComplaints] = useState([]);
-  const [selectedCityId, setSelectedCityId] = useState(1);
-  const [selectedCity, setSelectedCity] = useState("");
+
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: type
-        ? langCtx.language === "ar"
-          ? reportData.subject.arabicName
-          : reportData.subject.name
-        : title,
+      title:
+        langCtx.language === "ar"
+          ? "تعديل " + reportData.subject.arabicName
+          : "Update " + reportData.subject.name,
     });
-  }, [navigation, title]);
+  }, [navigation]);
 
   useEffect(() => {
     FetchMunicipalities(1)
       .then((response) => {
         setFetchedComplaints(response.data);
-        console.log(response.data);
-        setSelectedCityId(fetchedComplaints[0].id);
-        langCtx.language === "en"
-          ? setSelectedCity(fetchedComplaints[0].name)
-          : setSelectedCity(fetchedComplaints[0].arabicName);
-        setSelectedCity(fetchedComplaints[0].name);
+        // console.log(response.data);
+
+        const specificMunicipalityId = reportData.municipalityId;
+        const selectedMunicipality = response.data.find(
+          (Municipality) => Municipality.id === specificMunicipalityId
+        );
+        console.log(selectedMunicipality);
+        if (selectedMunicipality) {
+          setSelectedCityId(selectedMunicipality.id);
+          langCtx.language === "en"
+            ? setSelectedCity(selectedMunicipality.name)
+            : setSelectedCity(selectedMunicipality.arabicName);
+        } else if (response.data.length > 0) {
+          // Fallback to the first item if specific ID is not found
+
+          setSelectedCityId(response.data[0].id);
+          langCtx.language === "en"
+            ? setSelectedCity(response.data[0].name)
+            : setSelectedCity(response.data[0].arabicName);
+        }
       })
       .catch((error) => {
         console.log(error);
       });
-  }, []);
+  }, [navigation]);
+
+  useEffect(() => {
+    if (reportData) {
+      setShouldLoadLocation((prev) => !prev); // Toggle to trigger useEffect
+      console.log(reportData);
+      setComplaintDetails(reportData.details);
+      setAccused(reportData.accused);
+      setBuildingNumber(reportData.buildingNumber);
+      setNearestLocation(reportData.nearestLocation);
+      setSelectedLocation({
+        lat: reportData.location.latitude,
+        lng: reportData.location.longitude,
+        city,
+      });
+
+      setComplaintId(reportData.id);
+      setReportData(route.params.reportData);
+    }
+  }, [navigation]);
   function validateInputs() {
     let updatedValidation = { ...validation };
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -105,9 +135,6 @@ export default function TakeReportScreen({ route, navigation }) {
     }
     setValidation(updatedValidation);
   }
-  async function submitEditedForm() {
-    console.log("Editing submitting..");
-  }
 
   async function onSubmitHandler() {
     validateInputs();
@@ -124,9 +151,9 @@ export default function TakeReportScreen({ route, navigation }) {
 
       return;
     }
+    console.log(selectedLocation);
 
-    // Validate if city is in Jordan
-    if (city[2] !== " Jordan") {
+    if (city !== "Jordan") {
       setAlertMessage(
         langCtx.language === "en"
           ? "Pleas pick a location in Jordan."
@@ -158,69 +185,96 @@ export default function TakeReportScreen({ route, navigation }) {
     const complaintData = {
       phoneNumber,
       email,
-      accused: accused || "", // Default to empty string if not provided
-      date: "2024-10-14",
       nearestLocation,
       buildingNumber,
-      complaintDetails,
-      visibility: "Visible",
       location: {
         latitude: selectedLocation.lat,
         longitude: selectedLocation.lng,
       },
       details: complaintDetails,
-      userId: authCtx.userData.id,
-      subjectId: complaintId,
-      municipalityId: selectedCityId,
     };
-
+    console.log("Complaint data :", { ...complaintData });
     try {
       // Call the API to submit the complaint
       setIsLoading(true);
-      const response = await TakeComplaint(complaintData, authCtx.token); // Assuming you have the token in your auth context
 
-      if (response.status === 200) {
-        navigation.navigate("SuccessComplaint");
-        console.log("success");
-      } else {
-        if (response.data.detail === "Max Daily Complaints Reached") {
-          console.log("hello", response.data.detail);
+      const response = await UpdateComplaints(
+        complaintId,
+        complaintData,
+        authCtx.token
+      );
+
+      switch (response.status) {
+        case 204:
+          navigation.navigate("SuccessUpdateScreen");
+          console.log("Success");
+          break;
+
+        case 400:
+          console.log(response.data.errors);
           setAlertMessage(
             langCtx.language === "ar"
-              ? "لقد تجاوزت الحد الأقصى للشكاوى اليومية"
-              : response.data.detail || "Failed to submit your complaint."
+              ? "لم يتم ارسال الشكوى"
+              : response.data?.detail || "Failed to submit your complaint."
           );
           setAlertVisible(true);
-          return;
-        }
-        console.log(response.data);
-        setAlertMessage(
-          langCtx.language === "ar"
-            ? "لم يتم ارسال الشكوى"
-            : response.data.detail || "Failed to submit your complaint."
-        );
-        setAlertVisible(true);
+          console.log("400 Bad Request");
+          break;
+
+        default:
+          console.log(response.data.errors);
+          if (
+            response.data &&
+            response.data.detail === "Max Daily Complaints Reached"
+          ) {
+            console.log("Max daily complaints reached:", response.data.detail);
+            setAlertMessage(
+              langCtx.language === "ar"
+                ? "لقد تجاوزت الحد الأقصى للشكاوى اليومية"
+                : response.data.detail || "Failed to submit your complaint."
+            );
+          } else {
+            setAlertMessage(
+              langCtx.language === "ar"
+                ? "لم يتم ارسال الشكوى"
+                : response.data?.detail || "Failed to submit your complaint."
+            );
+          }
+          setAlertVisible(true);
+          break;
       }
     } catch (error) {
       setAlertMessage(
         langCtx.language === "en"
           ? "Something went wrong. Please try again."
-          : "لقد  حدث خطأ ما. يرجى المحاولة مرة أخرى."
+          : "لقد حدث خطأ ما. يرجى المحاولة مرة أخرى."
       );
-
       setAlertVisible(true);
-      console.error("Complaint submission error:", error);
+      console.log("Error occurred");
+
+      if (error.response) {
+        console.error("API Error response:", error.response.data);
+      } else {
+        console.error("Complaint submission error:", error);
+      }
     } finally {
       setIsLoading(false);
     }
 
+    // Log the submitted data
     console.log("Form submitted with:", complaintData);
   }
 
   const onPickedLocationHandler = useCallback(({ lng, lat, address }) => {
-    const cityArray = address.split(",");
-    setSelectedLocation({ lat, lng, city: cityArray });
-    setCity(cityArray);
+    // Split the address and get the last part as the country
+    let country = address.split(",");
+    country = country[country.length - 1].trim(); // .trim() removes any extra whitespace
+
+    // Set the selected location and city state
+    setSelectedLocation({ lat, lng, city: country });
+    setCity(country.trim());
+
+    console.log(country);
   }, []);
 
   return (
@@ -258,35 +312,7 @@ export default function TakeReportScreen({ route, navigation }) {
               hasLabel={true}
               val={email}
             />
-            <View style={styles.pickerWrapper}>
-              <Text style={styles.labelText}>
-                {langCtx.language === "en" ? "Municipality" : "البلدية"}
-              </Text>
-              <Picker
-                selectedValue={selectedCity}
-                onValueChange={(itemValue) => {
-                  const selectedCityObject = fetchedComplaints.find(
-                    (city) => city.name === itemValue
-                  );
-                  setSelectedCityId(selectedCityObject?.id);
-                  setSelectedCity(itemValue);
-                  //   console.log(selectedCityId);
-                }}
-                style={styles.picker}
-                itemStyle={styles.pickerItem}
-                mode={"dropdown"}
-              >
-                {fetchedComplaints.map((city) => (
-                  <Picker.Item
-                    key={city.id}
-                    label={
-                      langCtx.language === "en" ? city.name : city.arabicName
-                    }
-                    value={city.name}
-                  />
-                ))}
-              </Picker>
-            </View>
+
             <Input
               placeHolder={
                 langCtx.language === "ar" ? "أقرب معلم" : " Nearest location"
@@ -335,23 +361,25 @@ export default function TakeReportScreen({ route, navigation }) {
             />
           </View>
           <View style={styles.location}>
-            <LocationPicker
-              lat={lat}
-              lng={lng}
-              onPickedLocationHandler={onPickedLocationHandler}
-            />
+            {selectedLocation ? (
+              <LocationPicker
+                lat={selectedLocation.lat}
+                lng={selectedLocation.lng}
+                onPickedLocationHandler={onPickedLocationHandler}
+                isEdit={true}
+                shouldLoadLocation={shouldLoadLocation}
+              />
+            ) : (
+              <Text style={styles.locationPlaceholder}>
+                {langCtx.language === "ar"
+                  ? "يرجى اختيار موقع"
+                  : "Please pick a location"}
+              </Text>
+            )}
           </View>
-          <Button
-            onPress={isEditing ? submitEditedForm : onSubmitHandler}
-            style={[{ marginBottom: 30 }]}
-          >
-            {isEditing
-              ? langCtx.language === "ar"
-                ? "  تعديل "
-                : " Edit"
-              : langCtx.language === "ar"
-              ? "  ارسال "
-              : " Send"}
+
+          <Button onPress={onSubmitHandler} style={[{ marginBottom: 30 }]}>
+            {langCtx.language === "ar" ? "  تعديل " : " Edit"}
           </Button>
         </>
       )}

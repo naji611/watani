@@ -4,23 +4,26 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
+  Dimensions,
 } from "react-native";
 import React, { useRef } from "react";
 import { LinearGradient } from "expo-linear-gradient";
+
+const { width: screenWidth } = Dimensions.get("window");
 
 export default function Report({ title, description, onPress }) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
-      toValue: 0.95, // Slightly shrink the card on press
+      toValue: 0.95,
       useNativeDriver: true,
     }).start();
   };
 
   const handlePressOut = () => {
     Animated.spring(scaleAnim, {
-      toValue: 1, // Return to original size
+      toValue: 1,
       friction: 5,
       useNativeDriver: true,
     }).start();
@@ -35,9 +38,8 @@ export default function Report({ title, description, onPress }) {
         onPress={onPress}
         style={styles.touchable}
       >
-        {/* colors={["#2980B9", "#66BFBF"]} */}
         <LinearGradient
-          colors={["#6CAAA4", "#66BFBF"]} // Soft blue gradient with a hint of green
+          colors={["#6CAAA4", "#66BFBF"]}
           style={styles.container}
         >
           <Text style={styles.title}>{title}</Text>
@@ -50,44 +52,42 @@ export default function Report({ title, description, onPress }) {
 
 const styles = StyleSheet.create({
   touchable: {
-    borderRadius: 25, // More rounded corners for a modern look
-    marginBottom: 15,
-    overflow: "hidden", // Prevent clipping of the gradient
+    borderRadius: 20,
+    marginBottom: screenWidth * 0.04, // Spacing based on screen width
+    overflow: "hidden",
   },
   container: {
     justifyContent: "center",
     alignItems: "center",
-    padding: 25,
-    margin: 10,
-    borderRadius: 25, // More rounded corners for a modern look
+    padding: screenWidth * 0.06, // Padding responsive to screen width
+    marginHorizontal: screenWidth * 0.05, // Margin based on screen width
+    borderRadius: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 6,
-
-    maxWidth: 320,
-    minHeight: 130,
-    minWidth: 320,
+    maxWidth: screenWidth * 0.8, // Limit max width to 90% of screen width
+    minWidth: screenWidth * 0.8,
+    minHeight: screenWidth * 0.35, // Minimum height proportionate to width
     backgroundColor: "#fff",
-    borderWidth: 0.5, // Soft border for more definition
+    borderWidth: 0.5,
     borderColor: "#ddd",
   },
   title: {
-    fontSize: 20,
-    fontWeight: "700", // Slightly bolder for emphasis
-    color: "#fff", // White text for better contrast against the gradient
+    fontSize: screenWidth * 0.055, // Dynamic font size
+    fontWeight: "700",
+    color: "#fff",
     textAlign: "center",
-    fontWeight: "bold",
-    fontFamily: "Roboto", // A clean and readable font
+    fontFamily: "Roboto",
   },
   description: {
-    fontSize: 15,
-    color: "#fff", // White text for better contrast against the gradient
+    fontSize: screenWidth * 0.04, // Responsive font size for description
+    color: "#fff",
     textAlign: "center",
-    marginTop: 10,
-    paddingHorizontal: 15,
-    lineHeight: 1.5, // Adjust line height for better readability
-    fontFamily: "Roboto", // A clean and readable font
+    marginTop: screenWidth * 0.02, // Responsive spacing
+    paddingHorizontal: screenWidth * 0.04,
+    lineHeight: screenWidth * 0.06,
+    fontFamily: "Roboto",
   },
 });

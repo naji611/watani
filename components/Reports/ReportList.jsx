@@ -7,9 +7,11 @@ import { fetchComplaints } from "../../utl/apis";
 import LoadingIndicator from "../../components/UI/LoadingIndicator";
 import { useContext } from "react";
 import AuthContextProvider, { AuthContext } from "../../store/TokenContext.jsx";
+import { LanguageContext } from "../../store/languageContext.jsx";
 
 export default function ReportList({ catId }) {
   const authCtx = useContext(AuthContext);
+  const langCtx = useContext(LanguageContext);
   const navigation = useNavigation();
   const [isLoading, setIsLoading] = useState(true);
   const [complaints, setComplaints] = useState([]);
@@ -37,10 +39,17 @@ export default function ReportList({ catId }) {
           renderItem={(itemData) => {
             return (
               <Report
-                title={itemData.item.arabicName}
+                title={
+                  langCtx.language === "ar"
+                    ? itemData.item.arabicName
+                    : itemData.item.name
+                }
                 onPress={() =>
                   navigation.navigate("TakeReportScreen", {
-                    title: itemData.item.arabicName,
+                    title:
+                      langCtx.language === "ar"
+                        ? itemData.item.arabicName
+                        : itemData.item.name,
                     subjectId: itemData.item.id,
                   })
                 }
@@ -58,6 +67,7 @@ const styles = StyleSheet.create({
   list: {
     flex: 1,
     marginHorizontal: 5,
+    marginVertical: 10,
   },
   centeredContent: {
     alignItems: "center", // Align content in the center

@@ -4,8 +4,9 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  Dimensions,
 } from "react-native";
-import { Alert } from "react-native";
+
 import React, { useState } from "react";
 import Input from "../components/UI/Input";
 import Button from "../components/UI/Button";
@@ -24,6 +25,7 @@ import LoadingIndicator from "../components/UI/LoadingIndicator";
 import decodeToken from "../utl/converToken.js";
 import CustomAlert from "../components/UI/CustomAlert.jsx";
 import { LanguageContext } from "../store/languageContext.jsx";
+const { width, height } = Dimensions.get("window");
 const jordanCitiesEN = [
   { id: 1, name: "Amman" },
   { id: 2, name: "Zarqa" },
@@ -79,6 +81,7 @@ export default function SignUpScreen({ navigation }) {
   const [birthYear, setBirthYear] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [workflow, setWorkflow] = useState(1);
   const [validation, setValidation] = useState({
     firstName: true,
     secondName: true,
@@ -248,7 +251,7 @@ export default function SignUpScreen({ navigation }) {
     return isValid; // Return true if all relevant validations pass
   }
 
-  const radioButtons = [
+  const radioButtonsAR = [
     {
       id: "1",
       label: "أردني", // Jordanian
@@ -274,6 +277,37 @@ export default function SignUpScreen({ navigation }) {
     {
       id: "4",
       label: "اجنبي", // Foreigner
+      value: "foreigner",
+      labelStyle: styles.radioLabel,
+      containerStyle: styles.radioContainer,
+    },
+  ];
+  const radioButtonsEN = [
+    {
+      id: "1",
+      label: "Jordanian",
+      value: "jordanian",
+      selected: true,
+      labelStyle: styles.radioLabel,
+      containerStyle: styles.radioContainer,
+    },
+    {
+      id: "2",
+      label: "Children of Jordanian Women",
+      value: "children_of_jordanian_women",
+      labelStyle: styles.radioLabel,
+      containerStyle: styles.radioContainer,
+    },
+    {
+      id: "3",
+      label: "Children of Gaza",
+      value: "children_of_gaza",
+      labelStyle: styles.radioLabel,
+      containerStyle: styles.radioContainer,
+    },
+    {
+      id: "4",
+      label: "Foreigner",
       value: "foreigner",
       labelStyle: styles.radioLabel,
       containerStyle: styles.radioContainer,
@@ -517,7 +551,14 @@ export default function SignUpScreen({ navigation }) {
           contentContainerStyle={styles.scrollViewContent}
         >
           <RegisterImage />
-          <View style={[styles.tabs]}>
+          <View
+            style={[
+              styles.tabs,
+              {
+                left: langCtx.language === "en" ? width / 20 : width / 25,
+              },
+            ]}
+          >
             <TouchableOpacity
               style={[
                 styles.tab,
@@ -527,7 +568,10 @@ export default function SignUpScreen({ navigation }) {
                 },
               ]}
             >
-              <Text style={styles.textTab}> حساب جديد </Text>
+              <Text style={styles.textTab}>
+                {" "}
+                {langCtx.language === "ar" ? "حساب جديد" : "SignUp"}{" "}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => navigation.navigate("LoginScreen")}
@@ -539,14 +583,21 @@ export default function SignUpScreen({ navigation }) {
                 },
               ]}
             >
-              <Text style={styles.textTab}>تسجيل الدخول</Text>
+              <Text style={styles.textTab}>
+                {" "}
+                {langCtx.language === "ar" ? "تسجيل الدخول " : "Login"}{" "}
+              </Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.form}>
-            <Text style={styles.title}>الجنسية</Text>
+            <Text style={styles.title}>
+              {langCtx.language === "ar" ? " الجنسية" : "nationality"}
+            </Text>
             <RadioGroup
-              radioButtons={radioButtons}
+              radioButtons={
+                langCtx.language === "ar" ? radioButtonsAR : radioButtonsEN
+              }
               onPress={onPressRadioButton}
               layout="row" // Layout in a row
               containerStyle={styles.radioGroup}
@@ -555,7 +606,9 @@ export default function SignUpScreen({ navigation }) {
             />
             <View style={styles.rowInputs}>
               <Input
-                placeHolder={"الاسم الثاني "}
+                placeHolder={
+                  langCtx.language === "ar" ? "الاسم الثاني " : "Second name"
+                }
                 logo={"person"}
                 width="small"
                 onChangeText={(val) => setSecondName(val)}
@@ -564,7 +617,9 @@ export default function SignUpScreen({ navigation }) {
                 maxLength={50}
               />
               <Input
-                placeHolder={"الاسم الاول"}
+                placeHolder={
+                  langCtx.language === "ar" ? "الاسم الاول " : "First name"
+                }
                 logo={"person"}
                 width="small"
                 onChangeText={(val) => setFirstName(val)}
@@ -575,7 +630,9 @@ export default function SignUpScreen({ navigation }) {
             </View>
             <View style={styles.rowInputs}>
               <Input
-                placeHolder={"الاسم الرابع "}
+                placeHolder={
+                  langCtx.language === "ar" ? "الاسم الرابع " : "Fourth name"
+                }
                 logo={"person"}
                 width="small"
                 onChangeText={(val) => setLastName(val)}
@@ -585,7 +642,9 @@ export default function SignUpScreen({ navigation }) {
               />
 
               <Input
-                placeHolder={"الاسم الثالث"}
+                placeHolder={
+                  langCtx.language === "ar" ? "الاسم الثالث " : "Third name"
+                }
                 logo={"person"}
                 width="small"
                 onChangeText={(val) => setThirdName(val)}
@@ -602,7 +661,10 @@ export default function SignUpScreen({ navigation }) {
                 itemStyle={styles.pickerItem} // Bold text applied here
                 mode={"dropdown"}
               >
-                {jordanCitiesAR.map((city) => (
+                {(langCtx.language === "en"
+                  ? jordanCitiesEN
+                  : jordanCitiesAR
+                ).map((city) => (
                   <Picker.Item
                     key={city.id}
                     label={city.name}
@@ -612,7 +674,9 @@ export default function SignUpScreen({ navigation }) {
               </Picker>
             </View>
             <Input
-              placeHolder={" البريد الالكتروني"}
+              placeHolder={
+                langCtx.language === "ar" ? " البريد الالكتروني" : " Email"
+              }
               logo={"mail"}
               onChangeText={(val) => setEmail(val)}
               value={email}
@@ -621,7 +685,11 @@ export default function SignUpScreen({ navigation }) {
             {selectedId === "1" && (
               <>
                 <Input
-                  placeHolder={"الرقم الوطني"}
+                  placeHolder={
+                    langCtx.language === "ar"
+                      ? "الرقم الوطني"
+                      : "Nationality Number"
+                  }
                   logo={"id"}
                   onChangeText={(val) => setNationalityId(val)}
                   value={nationalityId}
@@ -630,11 +698,11 @@ export default function SignUpScreen({ navigation }) {
                   maxLength={10}
                 />
                 <Input
-                  placeHolder={" رقم الهوية"}
+                  placeHolder={
+                    langCtx.language === "ar" ? "رقم الهوية" : "Identity Number"
+                  }
                   logo={"id"}
-                  onChangeText={(val) => {
-                    setIdentityNumber(val);
-                  }}
+                  onChangeText={(val) => setIdentityNumber(val)}
                   value={identityNumber}
                   borderColorRed={validation.identityNumber === false}
                   maxLength={8}
@@ -644,57 +712,82 @@ export default function SignUpScreen({ navigation }) {
             {selectedId === "2" && (
               <>
                 <Input
-                  placeHolder={" الرقم المتسلسل "}
+                  placeHolder={
+                    langCtx.language === "ar"
+                      ? "الرقم المتسلسل"
+                      : "Serial Number"
+                  }
                   logo={"id"}
                   onChangeText={(val) => setSerialNumberJordanSn(val)}
                   value={serialNumberJordanSn}
                   borderColorRed={validation.serialNumberJordanSn === false}
                   maxLength={10}
+                  keyboardType="numeric"
                 />
                 <Input
-                  placeHolder={" رقم الوثيقة"}
+                  placeHolder={
+                    langCtx.language === "ar"
+                      ? "رقم الوثيقة"
+                      : "Document Number"
+                  }
                   logo={"id"}
                   onChangeText={(val) => setDocumentNumberJordanSn(val)}
                   value={documentNumberJordanSn}
                   borderColorRed={validation.documentNumberJordanSn === false}
                   maxLength={8}
+                  keyboardType="numeric"
                 />
               </>
             )}
             {selectedId === "3" && (
               <>
                 <Input
-                  placeHolder={" رقم الملف"}
+                  placeHolder={
+                    langCtx.language === "ar" ? "رقم الملف" : "File Number"
+                  }
                   logo={"id"}
                   onChangeText={(val) => setFileNumberGaza(val)}
                   value={fileNumberGaza}
                   borderColorRed={validation.fileNumberGaza === false}
                   maxLength={10}
+                  keyboardType="numeric"
                 />
 
                 <Input
-                  placeHolder={"رقم الوثيقة"}
+                  placeHolder={
+                    langCtx.language === "ar"
+                      ? "رقم الوثيقة"
+                      : "Document Number"
+                  }
                   logo={"id"}
                   onChangeText={(val) => setDocumentNumberGaza(val)}
                   value={documentNumberGaza}
                   borderColorRed={validation.documentNumberGaza === false}
                   maxLength={8}
+                  keyboardType="numeric"
                 />
               </>
             )}
             {selectedId === "4" && (
               <>
                 <Input
-                  placeHolder={"  الرقم الشخصي"}
+                  placeHolder={
+                    langCtx.language === "ar"
+                      ? "الرقم الشخصي"
+                      : "Personal Number"
+                  }
                   logo={"id"}
                   onChangeText={(val) => setPersonalNumber(val)}
                   value={personalNumber}
                   borderColorRed={validation.personalNumber === false}
                   maxLength={10}
+                  keyboardType="numeric"
                 />
 
                 <Input
-                  placeHolder={"سنة الميلاد"}
+                  placeHolder={
+                    langCtx.language === "ar" ? "سنة الميلاد" : "Birth Year"
+                  }
                   logo={"calendar-outline"}
                   onChangeText={(val) => setBirthYear(val)}
                   value={birthYear}
@@ -705,7 +798,9 @@ export default function SignUpScreen({ navigation }) {
               </>
             )}
             <Input
-              placeHolder={"رقم الهاتف"}
+              placeHolder={
+                langCtx.language === "ar" ? "رقم الهاتف" : "Phone Number"
+              }
               logo={"call"}
               onChangeText={(val) => setPhoneNumber(val)}
               value={phoneNumber}
@@ -714,8 +809,9 @@ export default function SignUpScreen({ navigation }) {
               maxLength={10}
             />
             <Input
-              placeHolder={"كلمة المرور"}
-              logo={"lock-closed"}
+              placeHolder={
+                langCtx.language === "ar" ? "كلمة المرور" : "Password"
+              }
               secureTextEntry={true}
               onChangeText={(val) => setPassword(val)}
               value={password}
@@ -723,8 +819,11 @@ export default function SignUpScreen({ navigation }) {
               maxLength={20}
             />
             <Input
-              placeHolder={"تأكيد كلمة المرور"}
-              logo={"lock-closed"}
+              placeHolder={
+                langCtx.language === "ar"
+                  ? "تأكيد كلمة المرور"
+                  : "Confirm Password"
+              }
               secureTextEntry={true}
               onChangeText={(val) => setConfirmPassword(val)}
               value={confirmPassword}
@@ -738,7 +837,7 @@ export default function SignUpScreen({ navigation }) {
               onSubmit();
             }}
           >
-            التسجيل
+            {langCtx.language === "ar" ? "التسجيل" : "Register"}
           </Button>
         </ScrollView>
       )}
@@ -761,7 +860,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     position: "absolute",
     top: 140,
-    left: 40,
   },
   tab: {
     borderBottomWidth: 5,
@@ -769,25 +867,30 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 20,
     marginHorizontal: 5,
+    width: width / 2.25,
   },
   textTab: {
     fontSize: 20,
     fontWeight: "bold",
+    marginBottom: 10,
   },
   radioGroup: {
     marginVertical: 10,
     paddingHorizontal: 20,
-
     borderRadius: 10,
     paddingVertical: 10,
   },
   radioContainer: {
-    flexDirection: "column", // Arrange radio button and label in a column
-    alignItems: "center", // Center the items
+    flexDirection: "row", // Arrange radio button and label in a row
+    alignItems: "center", // Center the items vertically
+    justifyContent: "space-between",
     marginHorizontal: 10,
+    marginBottom: 20,
+    width: width * 0.2, // 50% of the screen width
   },
+
   radioLabel: {
-    fontSize: 16,
+    fontSize: 11,
     color: "#333",
     marginTop: 5, // Space between radio button and label
   },

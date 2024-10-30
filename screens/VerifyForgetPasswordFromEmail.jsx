@@ -1,18 +1,25 @@
 import { View, Text, StyleSheet } from "react-native";
-import React from "react";
+import React, { useContext } from "react";
 import Button from "../components/UI/Button";
 import RegisterImage from "../components/UI/RegisterImage";
+import { LanguageContext } from "../store/languageContext"; // Assuming you have a LanguageContext
 
 export default function PasswordResetConfirmationScreen({ navigation }) {
+  const langCtx = useContext(LanguageContext); // Access language context
+
   return (
     <View style={styles.screen}>
       <RegisterImage />
       <View style={styles.container}>
         <Text style={styles.text}>
-          تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني
+          {langCtx.language === "ar"
+            ? "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني"
+            : "A password reset link has been sent to your email"}
         </Text>
         <Text style={styles.subText}>
-          يرجى التحقق من بريدك الإلكتروني واتباع التعليمات
+          {langCtx.language === "ar"
+            ? "يرجى التحقق من بريدك الإلكتروني واتباع التعليمات"
+            : "Please check your email and follow the instructions"}
         </Text>
         <View style={styles.button}>
           <Button
@@ -20,7 +27,9 @@ export default function PasswordResetConfirmationScreen({ navigation }) {
               navigation.navigate("LoginScreen");
             }}
           >
-            العودة إلى تسجيل الدخول
+            {langCtx.language === "ar"
+              ? "العودة إلى تسجيل الدخول"
+              : "Back to Login"}
           </Button>
         </View>
       </View>
