@@ -39,7 +39,7 @@ export default function FeedBackScreen() {
     }
 
     setIsLoading(true);
-    Feedback(feedback, authCtx.userData.id)
+    Feedback(feedback, authCtx.userData.id, authCtx.token)
       .then((response) => {
         if (response.status === 200) {
           setFeedback("");
@@ -51,6 +51,7 @@ export default function FeedBackScreen() {
           setAlertVisible(true);
           setAlertError(false);
         } else {
+          console.log(response.status);
           setAlertMessage(
             langCtx.language === "ar"
               ? "يرجى المحاولة لاحقا!"

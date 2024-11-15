@@ -10,7 +10,6 @@ import {
 import React, { useState } from "react";
 import Input from "../components/UI/Input";
 import Button from "../components/UI/Button";
-import HeaderImage from "../components/UI/HeaderImage";
 import RegisterImage from "../components/UI/RegisterImage";
 import { Login } from "../utl/apis";
 import LoadingIndicator from "../components/UI/LoadingIndicator";
@@ -51,7 +50,7 @@ export default function LoginScreen({ navigation }) {
               name: decodedData.name, // Full name
               email: decodedData.email,
               phoneNumber: decodedData.phone_number,
-              city: decodedData.city,
+              governorateId: decodedData.governorateId,
               userType: decodedData.typ,
               id: decodedData.sub,
               expiration: decodedData.exp,

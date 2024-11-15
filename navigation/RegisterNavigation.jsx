@@ -5,16 +5,16 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import SignUpScreen from "../screens/SignUpScreen";
 import LoginScreen from "../screens/LoginScreen";
 import ForgetPasswordScreen from "../screens/ForgetPasswordScreen";
-import OTPScreen from "../screens/OTPScreen";
+
 import HomeScreen from "../screens/HomeScreen";
 import ReportsScreen from "../screens/ReportsScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import TrackingScreen from "../screens/TrackingScreen";
 import { Ionicons, Feather } from "@expo/vector-icons";
-import HeaderImage from "../components/UI/HeaderImage";
+
 import FeedBackScreen from "../screens/FeedBackScreen";
 import OverViewScreen from "../screens/OverViewScreen";
-import RegisterImage from "../components/UI/RegisterImage";
+
 import TakeReportScreen from "../screens/TakeReportScreen";
 import Map from "../screens/Map";
 import PersonalDetails from "../screens/PersonalDetails";
@@ -174,6 +174,9 @@ export function HomeStackNavigator() {
           component={UpdateComplaintsScreen}
         />
         <Stack.Screen
+          options={{
+            title: "",
+          }}
           name="SuccessUpdateScreen"
           component={SuccessUpdateScreen}
         />
@@ -202,7 +205,7 @@ export default function RegisterNavigation() {
           name="ForgetPasswordScreen"
           component={ForgetPasswordScreen}
         />
-        <Stack.Screen name="OTPScreen" component={OTPScreen} />
+
         <Stack.Screen name="HomeStack" component={HomeStackNavigator} />
         <Stack.Screen
           name="verifyEmailFromEmail"

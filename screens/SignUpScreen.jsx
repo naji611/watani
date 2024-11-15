@@ -28,31 +28,32 @@ import { LanguageContext } from "../store/languageContext.jsx";
 const { width, height } = Dimensions.get("window");
 const jordanCitiesEN = [
   { id: 1, name: "Amman" },
-  { id: 2, name: "Zarqa" },
-  { id: 3, name: "Irbid" },
-  { id: 4, name: "Aqaba" },
+  { id: 2, name: "Irbid" },
+  { id: 3, name: "Ajloun" },
+  { id: 4, name: "Jerash" },
   { id: 5, name: "Mafraq" },
-  { id: 6, name: "Salt" },
-  { id: 7, name: "Madaba" },
-  { id: 8, name: "Jerash" },
-  { id: 9, name: "Ajloun" },
-  { id: 10, name: "Ma'an" },
-  { id: 11, name: "Karak" },
-  { id: 12, name: "Tafilah" },
+  { id: 6, name: "Balqa" },
+  { id: 7, name: "Zarqa" },
+  { id: 8, name: "Madaba" },
+  { id: 9, name: "Karak" },
+  { id: 10, name: "Tafilah" },
+  { id: 11, name: "Ma'an" },
+  { id: 12, name: "Aqaba" },
 ];
+
 const jordanCitiesAR = [
   { id: 1, name: "عمان" },
-  { id: 2, name: "الزرقاء" },
-  { id: 3, name: "إربد" },
-  { id: 4, name: "العقبة" },
+  { id: 2, name: "إربد" },
+  { id: 3, name: "عجلون" },
+  { id: 4, name: "جرش" },
   { id: 5, name: "المفرق" },
-  { id: 6, name: "السلط" },
-  { id: 7, name: "مادبا" },
-  { id: 8, name: "جرش" },
-  { id: 9, name: "عجلون" },
-  { id: 10, name: "معان" },
-  { id: 11, name: "الكرك" },
-  { id: 12, name: "الطفيلة" },
+  { id: 6, name: "البلقاء" },
+  { id: 7, name: "الزرقاء" },
+  { id: 8, name: "مادبا" },
+  { id: 9, name: "الكرك" },
+  { id: 10, name: "الطفيلة" },
+  { id: 11, name: "معان" },
+  { id: 12, name: "العقبة" },
 ];
 
 export default function SignUpScreen({ navigation }) {
@@ -63,7 +64,7 @@ export default function SignUpScreen({ navigation }) {
   const [alertError, setAlertError] = useState(false);
   const [activeScreen, setActiveScreen] = useState("signUp");
   const [selectedId, setSelectedId] = useState("1");
-  const [selectedCity, setSelectedCity] = useState(jordanCitiesAR[0].name);
+  const [selectedCity, setSelectedCity] = useState(jordanCitiesAR[0].id);
   const [firstName, setFirstName] = useState("");
   const [secondName, setSecondName] = useState("");
   const [thirdName, setThirdName] = useState("");
@@ -384,7 +385,7 @@ export default function SignUpScreen({ navigation }) {
       name: decodedData.name,
       email: decodedData.email,
       phoneNumber: decodedData.phone_number,
-      city: decodedData.city,
+      governorateId: decodedData.governorateId,
       userType: decodedData.typ,
       id: decodedData.sub,
       expiration: decodedData.exp,
@@ -397,39 +398,61 @@ export default function SignUpScreen({ navigation }) {
     });
   }
   function handleRegistrationFailure(response) {
+    const isEnglish = langCtx.language === "en"; // Check the current language
+
     if (response.status === 500) {
-      setAlertMessage("Sorry", "The system is down");
+      setAlertMessage(
+        isEnglish ? "Sorry, the system is down." : "عذرًا، النظام معطل."
+      );
       setAlertError(true);
       setAlertVisible(true);
     } else {
       if (response.data.detail) {
-        setAlertMessage("Registration failed," + response.data.detail);
+        setAlertMessage(
+          isEnglish
+            ? `Registration failed, ${response.data.detail}`
+            : `فشل التسجيل، ${response.data.detail}`
+        );
         setAlertError(true);
         setAlertVisible(true);
       }
 
       if (response.data.errors) {
         console.log(response.data.errors);
+
         if (response.data.errors.DocumentNumber) {
-          setAlertMessage("Document Number is not in the correct format.");
-          setAlertError(true);
-          setAlertVisible(true);
+          setAlertMessage(
+            isEnglish
+              ? "Document Number is not in the correct format."
+              : "رقم المستند ليس بالتنسيق الصحيح."
+          );
         } else if (response.data.errors.SerialNumber) {
-          setAlertMessage("Serial Number is not in the correct format.");
-          setAlertError(true);
-          setAlertVisible(true);
+          setAlertMessage(
+            isEnglish
+              ? "Serial Number is not in the correct format."
+              : "الرقم التسلسلي ليس بالتنسيق الصحيح."
+          );
         } else if (response.data.errors.FileNumber) {
-          setAlertMessage("File Number is not in the correct format.");
-          setAlertError(true);
-          setAlertVisible(true);
+          setAlertMessage(
+            isEnglish
+              ? "File Number is not in the correct format."
+              : "رقم الملف ليس بالتنسيق الصحيح."
+          );
         } else if (response.data.errors.PersonalNumber) {
-          setAlertMessage("Personal Number is not in the correct format.");
-          setAlertError(true);
-          setAlertVisible(true);
+          setAlertMessage(
+            isEnglish
+              ? "Personal Number is not in the correct format."
+              : "الرقم الشخصي ليس بالتنسيق الصحيح."
+          );
         }
+
+        // Set the alert after the specific error
+        setAlertError(true);
+        setAlertVisible(true);
       }
     }
   }
+
   function handleError(error) {
     if (error.response && error.response.status === 400) {
       console.log("error:", error);
@@ -471,7 +494,7 @@ export default function SignUpScreen({ navigation }) {
         phoneNumber,
         email: email.trim(),
         password,
-        City: selectedCity,
+        governorateId: selectedCity,
         nationalityNumber: nationalityId,
         verificationMechanism: "IdentityNumber",
         identityNumber: identityNumber.toUpperCase(),
@@ -489,7 +512,7 @@ export default function SignUpScreen({ navigation }) {
         phoneNumber,
         email: email.trim(),
         password,
-        City: selectedCity,
+        governorateId: selectedCity,
         documentNumber: documentNumberJordanSn,
         serialNumber: serialNumberJordanSn,
       };
@@ -505,7 +528,7 @@ export default function SignUpScreen({ navigation }) {
         phoneNumber,
         email: email.trim(),
         password,
-        City: selectedCity,
+        governorateId: selectedCity,
         documentNumber: documentNumberGaza,
         fileNumber: fileNumberGaza,
       };
@@ -521,7 +544,7 @@ export default function SignUpScreen({ navigation }) {
         phoneNumber,
         email: email.trim(),
         password,
-        City: selectedCity,
+        governorateId: selectedCity,
         personalNumber,
         yearOfBirth: birthYear,
       };
@@ -529,10 +552,18 @@ export default function SignUpScreen({ navigation }) {
     }
     // Fallback for invalid inputs
     else {
-      setAlertMessage("Validation failed. Please fill in all required fields.");
+      setAlertMessage(
+        langCtx.language === "en"
+          ? "Validation failed. Please fill in all required fields."
+          : " . يرجى ملء جميع الحقول المطلوبة."
+      );
       setAlertError(true);
       setAlertVisible(true);
-      console.log("Validation failed. Please fill in all required fields.");
+      console.log(
+        langCtx.language === "en"
+          ? "Validation failed. Please fill in all required fields."
+          : " . يرجى ملء جميع الحقول المطلوبة."
+      );
     }
   }
 
@@ -592,18 +623,21 @@ export default function SignUpScreen({ navigation }) {
 
           <View style={styles.form}>
             <Text style={styles.title}>
-              {langCtx.language === "ar" ? " الجنسية" : "nationality"}
+              {langCtx.language === "ar" ? " الجنسية" : "Nationality"}
             </Text>
             <RadioGroup
               radioButtons={
                 langCtx.language === "ar" ? radioButtonsAR : radioButtonsEN
               }
               onPress={onPressRadioButton}
-              layout="row" // Layout in a row
-              containerStyle={styles.radioGroup}
+              layout="row" // Keep this for a row layout
+              containerStyle={[
+                styles.radioGroup,
+                selectedId === "yourId" ? styles.selectedContainer : null,
+              ]}
               selectedId={selectedId}
-              color="green"
             />
+
             <View style={styles.rowInputs}>
               <Input
                 placeHolder={
@@ -668,7 +702,7 @@ export default function SignUpScreen({ navigation }) {
                   <Picker.Item
                     key={city.id}
                     label={city.name}
-                    value={city.name}
+                    value={city.id}
                   />
                 ))}
               </Picker>
@@ -875,24 +909,35 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   radioGroup: {
-    marginVertical: 10,
-    paddingHorizontal: 20,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    padding: 10,
     borderRadius: 10,
-    paddingVertical: 10,
+    marginVertical: 10,
+
+    backgroundColor: "#C5D6BC",
   },
   radioContainer: {
-    flexDirection: "row", // Arrange radio button and label in a row
-    alignItems: "center", // Center the items vertically
-    justifyContent: "space-between",
-    marginHorizontal: 10,
-    marginBottom: 20,
-    width: width * 0.2, // 50% of the screen width
+    width: "42%",
+    alignItems: "center",
+    marginVertical: 5,
+    padding: 10,
+    borderRadius: 8,
   },
-
   radioLabel: {
-    fontSize: 11,
+    fontSize: 14,
     color: "#333",
-    marginTop: 5, // Space between radio button and label
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+  // Green accent for selected radio button
+  selectedContainer: {
+    borderColor: "#008000", // Green border
+    backgroundColor: "#F0FFF0", // Light green background
+  },
+  selectedLabel: {
+    color: "#008000", // Green text
   },
   title: {
     fontSize: 20,

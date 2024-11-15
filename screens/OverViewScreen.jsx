@@ -1,24 +1,28 @@
 import React, { useContext } from "react";
-import { View, Text, StyleSheet, ScrollView, Dimensions } from "react-native";
+import {
+  Text,
+  StyleSheet,
+  ScrollView,
+  Dimensions,
+  Animated,
+} from "react-native";
 import { LanguageContext } from "../store/languageContext";
 
-const { width } = Dimensions.get("window"); // Get the screen width
+const { width } = Dimensions.get("window");
 
 export default function OverViewScreen() {
   const langCtx = useContext(LanguageContext);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <Animated.Image
+        source={require("../assets/HeaderLogo.png")}
+        style={[styles.image]} // Apply rotation
+      />
       <Text style={styles.description}>
         {langCtx.language === "ar"
           ? "وطني هو تطبيق يتيح للمستخدمين تقديم الشكاوى في جميع أنحاء الأردن. تم تصميمه لتوفير المزيد من المرونة للمواطنين للتواصل مع البلديات. من خلال تطبيق وطني، يمكنك بسهولة الإبلاغ عن المشكلات، ومشاركة الملاحظات، والمساهمة في تحسين المجتمع."
           : "Watani is an app that allows users to make complaints in all places in Jordan. It is built to provide more flexibility for citizens to communicate with municipalities. With Watani, you can easily report issues, share feedback, and contribute to a better community."}
-      </Text>
-
-      <Text style={styles.description}>
-        {langCtx.language === "ar"
-          ? "نأمل أن يجعل هذا التطبيق تجربتك أكثر كفاءة ومتعة. لأي ملاحظات أو دعم، يرجى التواصل معنا من خلال قسم الاتصال."
-          : "We hope this app makes your experience more efficient and enjoyable. For any feedback or support, please reach out to us through the contact section."}
       </Text>
 
       <Text style={styles.contactTitle}>
@@ -27,8 +31,8 @@ export default function OverViewScreen() {
 
       <Text style={styles.contactEmail}>
         {langCtx.language === "ar"
-          ? "البريد الإلكتروني: watanihu@gmail.com"
-          : "Email: watanihu@gmail.com"}
+          ? " watanihu@gmail.com"
+          : " watanihu@gmail.com"}
       </Text>
     </ScrollView>
   );
@@ -39,6 +43,13 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: width > 400 ? 30 : 20, // Responsive padding based on screen width
     backgroundColor: "#f5f5f5",
+  },
+  image: {
+    width: width * 0.3, // Set the width of the image (60% of screen width)
+    height: width * 0.3, // Set the height of the image to match the width for a square aspect ratio
+    alignSelf: "center", // Center the image horizontally
+    marginBottom: 20, // Add some margin below the image
+    resizeMode: "contain", // Resize the image to fit within the bounds
   },
   description: {
     fontSize: width > 400 ? 18 : 16, // Responsive font size

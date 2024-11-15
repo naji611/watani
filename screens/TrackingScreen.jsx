@@ -28,8 +28,15 @@ export default function TrackingScreen({ navigation }) {
         try {
           const userId = authCtx.userData.id;
           setLoading(true);
+
           const response = await FetchComplaintsStatus(authCtx.token, userId);
-          setComplaints(response);
+          console.log("data:", response.status);
+
+          if (response.status !== 403 || response.status !== 500)
+            setComplaints(response);
+          if (response.status == 403) {
+            setComplaints([]);
+          }
         } catch (error) {
           console.error(error);
         } finally {
@@ -54,7 +61,7 @@ export default function TrackingScreen({ navigation }) {
             <View style={styles.containerNot}>
               <Text style={styles.textNot}>
                 {langCtx.language === "ar"
-                  ? " لا يوجد لديك شكاوي"
+                  ? "لا يوجد لديك شكاوي"
                   : "No Complaints Yet"}
               </Text>
             </View>
@@ -65,19 +72,19 @@ export default function TrackingScreen({ navigation }) {
                   <Text style={styles.reportTitle}>
                     <Text style={styles.complaintLabel}>
                       {langCtx.language === "ar"
-                        ? "   رقم الشكوى"
-                        : " Complaints Number"}
-                      :{" "}
-                    </Text>
+                        ? "رقم الشكوى"
+                        : "Complaint Number"}
+                      :
+                    </Text>{" "}
                     {report.id}
                   </Text>
                   <Text style={styles.text}>
                     <Text style={styles.bold}>
                       {langCtx.language === "ar"
-                        ? " نوع الشكوى"
-                        : " Complaints Type"}
-                      :{" "}
-                    </Text>
+                        ? "نوع الشكوى"
+                        : "Complaint Type"}
+                      :
+                    </Text>{" "}
                     <Text>
                       {langCtx.language === "ar"
                         ? report.subject.arabicName
@@ -86,14 +93,14 @@ export default function TrackingScreen({ navigation }) {
                   </Text>
                   <Text style={styles.text}>
                     <Text style={styles.bold}>
-                      {langCtx.language === "ar" ? " التاريخ " : " Date"}:{" "}
-                    </Text>
+                      {langCtx.language === "ar" ? "التاريخ" : "Date"}:
+                    </Text>{" "}
                     {report.date}
                   </Text>
                   <Text style={styles.text}>
                     <Text style={styles.bold}>
-                      {langCtx.language === "ar" ? " الحالة " : " Status "}:{" "}
-                    </Text>
+                      {langCtx.language === "ar" ? "الحالة" : "Status"}:
+                    </Text>{" "}
                     <Text
                       style={[
                         styles.statusText,
@@ -114,14 +121,21 @@ export default function TrackingScreen({ navigation }) {
                       {report.status}
                     </Text>
                   </Text>
-
+                  {report.isNotesDisplayedToUser && (
+                    <Text style={styles.text}>
+                      <Text style={styles.bold}>
+                        {langCtx.language === "ar" ? "ملاحظات" : "notes"}:
+                      </Text>{" "}
+                      {report.notes}
+                    </Text>
+                  )}
                   {report.status === "Registered" && (
                     <TouchableOpacity
                       style={styles.editButton}
                       onPress={() => handleEdit(report)}
                     >
                       <Text style={styles.editButtonText}>
-                        {langCtx.language === "ar" ? "تعديل " : "Edit"}
+                        {langCtx.language === "ar" ? "تعديل" : "Edit"}
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -147,6 +161,7 @@ const styles = StyleSheet.create({
   textNot: {
     fontSize: width * 0.05,
     color: "#000000",
+    textAlign: "center", // Center the text
   },
   report: {
     marginVertical: height * 0.01,
@@ -166,7 +181,8 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   complaintLabel: {
-    fontSize: width * 0.05,
+    fontSize: width * 0.045,
+    color: "#333", // Changed color for better visibility
   },
   text: {
     fontSize: width * 0.04,

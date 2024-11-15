@@ -3,50 +3,25 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Animated,
   Dimensions,
 } from "react-native";
-import React, { useRef } from "react";
+import React from "react";
 import { LinearGradient } from "expo-linear-gradient";
 
 const { width: screenWidth } = Dimensions.get("window");
 
 export default function Report({ title, description, onPress }) {
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-
-  const handlePressIn = () => {
-    Animated.spring(scaleAnim, {
-      toValue: 0.95,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.spring(scaleAnim, {
-      toValue: 1,
-      friction: 5,
-      useNativeDriver: true,
-    }).start();
-  };
-
   return (
-    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-      <TouchableOpacity
-        activeOpacity={0.9}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        onPress={onPress}
-        style={styles.touchable}
-      >
-        <LinearGradient
-          colors={["#6CAAA4", "#66BFBF"]}
-          style={styles.container}
-        >
-          <Text style={styles.title}>{title}</Text>
-          {description && <Text style={styles.description}>{description}</Text>}
-        </LinearGradient>
-      </TouchableOpacity>
-    </Animated.View>
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={onPress}
+      style={styles.touchable}
+    >
+      <LinearGradient colors={["#6CAAA4", "#66BFBF"]} style={styles.container}>
+        <Text style={styles.title}>{title}</Text>
+        {description && <Text style={styles.description}>{description}</Text>}
+      </LinearGradient>
+    </TouchableOpacity>
   );
 }
 

@@ -24,9 +24,14 @@ const fetchMunicipalities = (id) =>
 const UpdateComplaintsUrl = (id) =>
   `http://watani.runasp.net/api/v1/Complaints/${id}`;
 // General function to handle API calls with error handling
-async function apiPostRequest(url, data) {
+async function apiPostRequest(url, data, options = {}) {
   try {
-    const response = await axios.post(url, data);
+    const response = await axios.post(url, data, {
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers, // Merge custom headers (e.g., Authorization)
+      },
+    });
     return response;
   } catch (error) {
     if (error.response) {
@@ -67,8 +72,16 @@ export async function Login(username, password) {
   return await apiPostRequest(loginUrl(username, password), {});
 }
 
-export async function Feedback(opinion, userId) {
-  return await apiPostRequest(feedbackUrl, { opinion, userId });
+export async function Feedback(opinion, userId, token) {
+  return await apiPostRequest(
+    feedbackUrl,
+    { opinion, userId },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`, // Include token in the request
+      },
+    }
+  );
 }
 
 export async function fetchComplaints(complaintId, token) {
@@ -95,8 +108,17 @@ export async function fetchComplaints(complaintId, token) {
 }
 export async function TakeComplaint(data, token) {
   try {
-    const response = await axios.post(takeComplainUrl, data, {
+    // Create a FormData object and append the data
+    const formData = new FormData();
+    for (const key in data) {
+      if (data.hasOwnProperty(key)) {
+        formData.append(key, data[key]);
+      }
+    }
+
+    const response = await axios.post(takeComplainUrl, formData, {
       headers: {
+        "Content-Type": "multipart/form-data", // Set the content type to form data
         Authorization: `Bearer ${token}`,
       },
     });

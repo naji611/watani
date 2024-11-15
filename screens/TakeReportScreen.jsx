@@ -54,7 +54,7 @@ export default function TakeReportScreen({ route, navigation }) {
   }, [navigation, title]);
 
   useEffect(() => {
-    FetchMunicipalities(1)
+    FetchMunicipalities(authCtx.userData.governorateId)
       .then((response) => {
         setFetchedComplaints(response.data);
         console.log(response.data);
@@ -156,22 +156,19 @@ export default function TakeReportScreen({ route, navigation }) {
 
     // Prepare complaint data
     const complaintData = {
-      phoneNumber,
-      email,
-      accused: accused || "", // Default to empty string if not provided
-      date: "2024-10-14",
-      nearestLocation,
-      buildingNumber,
-      complaintDetails,
-      visibility: "Visible",
-      location: {
-        latitude: selectedLocation.lat,
-        longitude: selectedLocation.lng,
-      },
-      details: complaintDetails,
-      userId: authCtx.userData.id,
-      subjectId: complaintId,
-      municipalityId: selectedCityId,
+      PhoneNumber: phoneNumber,
+      Email: email,
+      Date: "2024-10-14",
+      NearestLocation: nearestLocation,
+      BuildingNumber: buildingNumber,
+      Visibility: "Visible",
+      Latitude: selectedLocation.lat,
+      Longitude: selectedLocation.lng,
+      Details: complaintDetails,
+      UserId: authCtx.userData.id,
+      SubjectId: complaintId,
+      MunicipalityId: selectedCityId,
+      Attachment: null,
     };
 
     try {
@@ -310,14 +307,7 @@ export default function TakeReportScreen({ route, navigation }) {
               val={buildingNumber}
               keyboardType="numeric"
             />
-            <Input
-              placeHolder={langCtx.language === "ar" ? " المتهم" : " accused"}
-              icon="call-outline"
-              onChangeText={(text) => setAccused(text)} // Handle phone number input
-              value={accused}
-              hasLabel={true}
-              val={accused}
-            />
+
             <Input
               placeHolder={
                 langCtx.language === "ar"

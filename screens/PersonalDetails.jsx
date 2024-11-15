@@ -10,7 +10,7 @@ const { width } = Dimensions.get("window");
 export default function PersonalDetails() {
   const authCtx = useContext(AuthContext);
   const langCtx = useContext(LanguageContext);
-
+  console.log("userData: ", authCtx.userData);
   return (
     <View style={styles.container}>
       <View style={styles.card}>

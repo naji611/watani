@@ -1,6 +1,6 @@
 import { View, ScrollView, StyleSheet } from "react-native";
 import React, { useContext } from "react";
-import HeaderImage from "../components/UI/HeaderImage";
+
 import Reports from "../components/UI/HomeScreenSections/Reports";
 import { LanguageContext } from "../store/languageContext";
 const complaintsCat = [
@@ -20,7 +20,6 @@ export default function HomeScreen({ navigation }) {
   const langCtx = useContext(LanguageContext);
   return (
     <View style={styles.screen}>
-      {/* Content starts here */}
       <ScrollView contentContainerStyle={styles.container}>
         {complaintsCat.map((comp) => {
           return (

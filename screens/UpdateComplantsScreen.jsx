@@ -128,11 +128,7 @@ export default function UpdateComplaintsScreen({ route, navigation }) {
     } else {
       updatedValidation.complaintDetails = true;
     }
-    if (!accused.trim()) {
-      updatedValidation.accused = false;
-    } else {
-      updatedValidation.accused = true;
-    }
+
     setValidation(updatedValidation);
   }
 
@@ -203,45 +199,58 @@ export default function UpdateComplaintsScreen({ route, navigation }) {
         complaintData,
         authCtx.token
       );
-
-      switch (response.status) {
-        case 204:
-          navigation.navigate("SuccessUpdateScreen");
-          console.log("Success");
-          break;
-
-        case 400:
-          console.log(response.data.errors);
-          setAlertMessage(
-            langCtx.language === "ar"
-              ? "لم يتم ارسال الشكوى"
-              : response.data?.detail || "Failed to submit your complaint."
-          );
-          setAlertVisible(true);
-          console.log("400 Bad Request");
-          break;
-
-        default:
-          console.log(response.data.errors);
-          if (
-            response.data &&
-            response.data.detail === "Max Daily Complaints Reached"
-          ) {
-            console.log("Max daily complaints reached:", response.data.detail);
-            setAlertMessage(
-              langCtx.language === "ar"
-                ? "لقد تجاوزت الحد الأقصى للشكاوى اليومية"
-                : response.data.detail || "Failed to submit your complaint."
-            );
-          } else {
+      if (response.status == 204) {
+        navigation.navigate("SuccessUpdateScreen");
+        console.log("Success");
+        console.log("rrrrrr", response?.status);
+      } else {
+        switch (response.status) {
+          case 400:
+            console.log(response.data.errors);
             setAlertMessage(
               langCtx.language === "ar"
                 ? "لم يتم ارسال الشكوى"
                 : response.data?.detail || "Failed to submit your complaint."
             );
-          }
-          setAlertVisible(true);
-          break;
+            setAlertVisible(true);
+            console.log("400 Bad Request");
+            break;
+          case 500:
+            console.log(response.data.errors);
+            setAlertMessage(
+              langCtx.language === "ar"
+                ? "يرجى المحاولة لاحقا   "
+                : response.data?.detail || "Please Try Again Later."
+            );
+            setAlertVisible(true);
+            console.log("400 Bad Request");
+            break;
+
+          default:
+            console.log(response.data.errors);
+            if (
+              response.data &&
+              response.data.detail === "Max Daily Complaints Reached"
+            ) {
+              console.log(
+                "Max daily complaints reached:",
+                response.data.detail
+              );
+              setAlertMessage(
+                langCtx.language === "ar"
+                  ? "لقد تجاوزت الحد الأقصى للشكاوى اليومية"
+                  : response.data.detail || "Failed to submit your complaint."
+              );
+            } else {
+              setAlertMessage(
+                langCtx.language === "ar"
+                  ? "لم يتم ارسال الشكوى"
+                  : response.data?.detail || "Failed to submit your complaint."
+              );
+            }
+            setAlertVisible(true);
+            break;
+        }
       }
     } catch (error) {
       setAlertMessage(
@@ -336,14 +345,7 @@ export default function UpdateComplaintsScreen({ route, navigation }) {
               val={buildingNumber}
               keyboardType="numeric"
             />
-            <Input
-              placeHolder={langCtx.language === "ar" ? " المتهم" : " accused"}
-              icon="call-outline"
-              onChangeText={(text) => setAccused(text)} // Handle phone number input
-              value={accused}
-              hasLabel={true}
-              val={accused}
-            />
+
             <Input
               placeHolder={
                 langCtx.language === "ar"

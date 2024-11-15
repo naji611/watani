@@ -56,6 +56,7 @@ export default function ChangePasswordScreen({ navigation }) {
           if (response.status === 204) {
             setModelMessage("Password Changed Successfully");
             setModelVisible(true);
+            setModelError(false);
           } else {
             console.log(response);
             setModelMessage("Something went wrong");

@@ -5,11 +5,6 @@ import { LanguageContext } from "../store/languageContext"; // Assuming you have
 
 export default function SuccessUpdateScreen({ navigation }) {
   const langCtx = useContext(LanguageContext);
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: langCtx.language === "ar" ? " " : " ",
-    });
-  }, [navigation]);
 
   const handleNextPress = () => {
     navigation.navigate("HomeTabs");

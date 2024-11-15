@@ -87,31 +87,19 @@ export default function LocationPicker({
   }, [pickedLocation, onPickedLocationHandler]);
 
   async function verifyPermission() {
-    // Request permissions if they are undetermined
-    if (locationPermissionInfo.status === PermissionStatus.UNDETERMINED) {
-      const permissionResponse = await requestPermission();
-      return permissionResponse.granted;
-    }
+    const permissionResponse = await requestPermission();
+    if (permissionResponse.granted) return true;
 
-    // Show alert if permission is denied
-    if (locationPermissionInfo.status === PermissionStatus.DENIED) {
-      console.log(locationPermissionInfo.status);
-      setAlertMessage(
-        langCtx.language === "en"
-          ? "Please grant location permissions in your device settings."
-          : " يرجى منح أذونات الموقع في إعدادات جهازك."
-      );
-      setAlertError(true);
-      setAlertVisible(true);
-
-      return false;
-    }
-
-    // If granted, return true
-    if (locationPermissionInfo.status === PermissionStatus.GRANTED) {
-      return true;
-    }
+    setAlertMessage(
+      langCtx.language === "en"
+        ? "Please grant location permissions in your device settings."
+        : " يرجى منح أذونات الموقع في إعدادات جهازك."
+    );
+    setAlertError(true);
+    setAlertVisible(true);
+    return false;
   }
+
   useEffect(() => {
     if (lat && lng)
       setPickedLocation({

@@ -2,6 +2,35 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomAlert from "../components/UI/CustomAlert";
 import { LanguageContext } from "./languageContext";
+const jordanCitiesEN = [
+  { id: 1, name: "Amman" },
+  { id: 2, name: "Irbid" },
+  { id: 3, name: "Ajloun" },
+  { id: 4, name: "Jerash" },
+  { id: 5, name: "Mafraq" },
+  { id: 6, name: "Balqa" },
+  { id: 7, name: "Zarqa" },
+  { id: 8, name: "Madaba" },
+  { id: 9, name: "Karak" },
+  { id: 10, name: "Tafilah" },
+  { id: 11, name: "Ma'an" },
+  { id: 12, name: "Aqaba" },
+];
+
+const jordanCitiesAR = [
+  { id: 1, name: "عمان" },
+  { id: 2, name: "إربد" },
+  { id: 3, name: "عجلون" },
+  { id: 4, name: "جرش" },
+  { id: 5, name: "المفرق" },
+  { id: 6, name: "البلقاء" },
+  { id: 7, name: "الزرقاء" },
+  { id: 8, name: "مادبا" },
+  { id: 9, name: "الكرك" },
+  { id: 10, name: "الطفيلة" },
+  { id: 11, name: "معان" },
+  { id: 12, name: "العقبة" },
+];
 
 export const AuthContext = createContext({
   isAuthenticated: false,
@@ -26,6 +55,7 @@ export default function AuthContextProvider({ children }) {
     name: "",
     id: "",
     isEmailConfirmed: "",
+    governorateId: "",
   });
   const [showAlert, setShowAlert] = useState(false);
 
@@ -36,9 +66,9 @@ export default function AuthContextProvider({ children }) {
 
       if (storedToken && storedUserData) {
         const parsedUserData = JSON.parse(storedUserData);
+
         setToken(storedToken);
         setUser(parsedUserData);
-
         if (parsedUserData.expiration) {
           const expirationDate = Number(parsedUserData.expiration) * 1000; // Convert to milliseconds
           const currentTime = Date.now();
@@ -65,9 +95,21 @@ export default function AuthContextProvider({ children }) {
 
   function authenticate(token, userData) {
     setToken(token);
-    setUser(userData);
+    const governorateId = parseInt(userData.governorateId, 10);
+    console.log("governorateId:", userData.governorateId);
+    const updatedUserData = {
+      ...userData,
+      city:
+        languageCtx.language === "en"
+          ? jordanCitiesEN.find((city) => city.id === governorateId)?.name
+          : jordanCitiesAR.find((city) => city.id === governorateId)?.name,
+      governorateId: governorateId,
+    };
+
+    setUser(updatedUserData);
+    console.log(updatedUserData); // Log the updated data
     AsyncStorage.setItem("token", token);
-    AsyncStorage.setItem("userData", JSON.stringify(userData));
+    AsyncStorage.setItem("userData", JSON.stringify(updatedUserData)); // Save the updated data
 
     // Check for token expiration upon authentication
     if (userData.expiration) {
@@ -98,6 +140,7 @@ export default function AuthContextProvider({ children }) {
       name: "",
       id: "",
       isEmailConfirmed: "",
+      governorateId: "",
     });
     AsyncStorage.removeItem("token");
     AsyncStorage.removeItem("userData");

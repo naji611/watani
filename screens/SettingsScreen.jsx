@@ -5,12 +5,10 @@ import { useContext } from "react";
 import { AuthContext } from "../store/TokenContext.jsx";
 import { LanguageContext } from "../store/languageContext.jsx";
 import { TouchableOpacity } from "react-native";
-import { ThemeContext } from "../store/ColorMode.jsx";
 
 export default function SettingsScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
   const languageCtx = useContext(LanguageContext);
-  const themeCtx = useContext(ThemeContext);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -27,7 +25,7 @@ export default function SettingsScreen({ navigation }) {
         </View>
       ),
     });
-  }, [navigation, languageCtx.language, themeCtx.theme]);
+  }, [navigation, languageCtx.language]);
 
   function handleSwitchLanguage() {
     languageCtx.toggleLanguage();

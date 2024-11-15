@@ -1,6 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
 import React, { useState, useContext } from "react";
-import HeaderImage from "../components/UI/HeaderImage";
 import Input from "../components/UI/Input";
 import Button from "../components/UI/Button";
 import RegisterImage from "../components/UI/RegisterImage";
