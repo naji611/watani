@@ -4,7 +4,8 @@ export default function LoadingIndicator({ message }) {
   return (
     <View style={styles.rootContainer}>
       <Text style={styles.message}>{message}</Text>
-      <ActivityIndicator size="large" />
+      <ActivityIndicator size="extra-large" color="#4CAF50" />
+      {/* Larger size and color */}
     </View>
   );
 }
@@ -14,10 +15,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 32,
+    padding: 50, // Increased padding
   },
   message: {
-    fontSize: 16,
-    marginBottom: 12,
+    fontSize: 24, // Larger font size
+    fontWeight: "bold", // Bold for emphasis
+    marginBottom: 20, // Increased margin for spacing
+    textAlign: "center", // Center the message text
+    color: "#333", // Darker color for readability
   },
 });

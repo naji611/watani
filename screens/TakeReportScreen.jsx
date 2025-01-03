@@ -1,13 +1,23 @@
-import { View, ScrollView, StyleSheet, Alert } from "react-native";
-import React, { useLayoutEffect, useState, useCallback } from "react";
+import { View, ScrollView, StyleSheet, Alert, Text } from "react-native";
+import React, {
+  useLayoutEffect,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import Input from "../components/UI/Input";
 import LocationPicker from "../components/location/LocationPicker";
+import { Picker } from "@react-native-picker/picker";
 import Button from "../components/UI/Button";
 import { useContext } from "react";
 import { AuthContext } from "../store/TokenContext.jsx";
-import { TakeComplaint } from "../utl/apis.js";
+import { FetchMunicipalities, TakeComplaint } from "../utl/apis.js";
+import LoadingIndicator from "../components/UI/LoadingIndicator";
+import CustomAlert from "../components/UI/CustomAlert.jsx";
+import { LanguageContext } from "../store/languageContext.jsx";
 export default function TakeReportScreen({ route, navigation }) {
   const authCtx = useContext(AuthContext);
+  const langCtx = useContext(LanguageContext);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [phoneNumber, setPhoneNumber] = useState(authCtx.userData.phoneNumber);
   const [nearestLocation, setNearestLocation] = useState("");
@@ -17,8 +27,11 @@ export default function TakeReportScreen({ route, navigation }) {
   const [email, setEmail] = useState(authCtx.userData.email);
   const [accused, setAccused] = useState("");
   const [complaintId, setComplaintId] = useState(route.params.subjectId);
-  const { title, lat, lng } = route.params;
-
+  const { title, lat, lng, reportData, type } = route.params;
+  const [isLoading, setIsLoading] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [isEditing, setIsEditing] = useState(type === "edit");
   const [validation, setValidation] = useState({
     email: true,
     phoneNumber: true,
@@ -27,12 +40,34 @@ export default function TakeReportScreen({ route, navigation }) {
     complaintDetails: true,
     accused: true,
   });
+  const [fetchedComplaints, setFetchedComplaints] = useState([]);
+  const [selectedCityId, setSelectedCityId] = useState(1);
+  const [selectedCity, setSelectedCity] = useState("");
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: title,
+      title: type
+        ? langCtx.language === "ar"
+          ? reportData.subject.arabicName
+          : reportData.subject.name
+        : title,
     });
   }, [navigation, title]);
 
+  useEffect(() => {
+    FetchMunicipalities(authCtx.userData.governorateId)
+      .then((response) => {
+        setFetchedComplaints(response.data);
+        console.log(response.data);
+        setSelectedCityId(fetchedComplaints[0].id);
+        langCtx.language === "en"
+          ? setSelectedCity(fetchedComplaints[0].name)
+          : setSelectedCity(fetchedComplaints[0].arabicName);
+        setSelectedCity(fetchedComplaints[0].name);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
   function validateInputs() {
     let updatedValidation = { ...validation };
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -70,18 +105,35 @@ export default function TakeReportScreen({ route, navigation }) {
     }
     setValidation(updatedValidation);
   }
+  async function submitEditedForm() {
+    console.log("Editing submitting..");
+  }
+
   async function onSubmitHandler() {
     validateInputs();
 
     // Validate if selectedLocation exists
     if (!selectedLocation) {
-      Alert.alert("Error", "Please pick a location before submitting.");
+      setAlertMessage(
+        langCtx.language === "en"
+          ? "Please pick a location before submitting."
+          : "يرجى اختيار موقع  قبل الإرسال."
+      );
+
+      setAlertVisible(true);
+
       return;
     }
 
     // Validate if city is in Jordan
     if (city[2] !== " Jordan") {
-      Alert.alert("Error", "Please pick a location in Jordan.");
+      setAlertMessage(
+        langCtx.language === "en"
+          ? "Pleas pick a location in Jordan."
+          : " يرجى اختيار موقع داخل الاردن"
+      );
+      setAlertVisible(true);
+
       return;
     }
 
@@ -92,52 +144,78 @@ export default function TakeReportScreen({ route, navigation }) {
       !buildingNumber ||
       !complaintDetails
     ) {
-      Alert.alert("Error", "Please fill out all fields before submitting.");
+      setAlertMessage(
+        langCtx.language === "en"
+          ? "please fill all required fields"
+          : "يرجى  ملء جميع الحقول المطلوبة"
+      );
+
+      setAlertVisible(true);
       return;
     }
 
     // Prepare complaint data
     const complaintData = {
-      phoneNumber,
-      email,
-      accused: accused || "", // Default to empty string if not provided
-      date: "2024-10-14",
-      nearestLocation,
-      buildingNumber,
-      complaintDetails,
-      visibility: "Visible",
-      location: {
-        latitude: selectedLocation.lat,
-        longitude: selectedLocation.lng,
-      },
-      details: complaintDetails,
-      userId: authCtx.userData.id,
-      subjectId: complaintId,
+      PhoneNumber: phoneNumber,
+      Email: email,
+      Date: "2024-10-14",
+      NearestLocation: nearestLocation,
+      BuildingNumber: buildingNumber,
+      Visibility: "Visible",
+      Latitude: selectedLocation.lat,
+      Longitude: selectedLocation.lng,
+      Details: complaintDetails,
+      UserId: authCtx.userData.id,
+      SubjectId: complaintId,
+      MunicipalityId: selectedCityId,
+      Attachment: null,
     };
 
     try {
       // Call the API to submit the complaint
+      setIsLoading(true);
       const response = await TakeComplaint(complaintData, authCtx.token); // Assuming you have the token in your auth context
 
       if (response.status === 200) {
         navigation.navigate("SuccessComplaint");
         console.log("success");
       } else {
+        if (response.data.detail === "Max Daily Complaints Reached") {
+          console.log("hello", response.data.detail);
+          setAlertMessage(
+            langCtx.language === "ar"
+              ? "لقد تجاوزت الحد الأقصى للشكاوى اليومية"
+              : response.data.detail || "Failed to submit your complaint."
+          );
+          setAlertVisible(true);
+          return;
+        }
         console.log(response.data);
-        Alert.alert(
-          "Error",
-          response.data.message || "Failed to submit your complaint."
+        setAlertMessage(
+          langCtx.language === "ar"
+            ? "لم يتم ارسال الشكوى"
+            : response.data.detail || "Failed to submit your complaint."
         );
+        setAlertVisible(true);
       }
     } catch (error) {
-      Alert.alert("Error", "Something went wrong. Please try again.");
+      setAlertMessage(
+        langCtx.language === "en"
+          ? "Something went wrong. Please try again."
+          : "لقد  حدث خطأ ما. يرجى المحاولة مرة أخرى."
+      );
+
+      setAlertVisible(true);
       console.error("Complaint submission error:", error);
+    } finally {
+      setIsLoading(false);
     }
 
     console.log("Form submitted with:", complaintData);
   }
 
   const onPickedLocationHandler = useCallback(({ lng, lat, address }) => {
+    //   console.log(lat, "address");
     const cityArray = address.split(",");
     setSelectedLocation({ lat, lng, city: cityArray });
     setCity(cityArray);
@@ -145,60 +223,129 @@ export default function TakeReportScreen({ route, navigation }) {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.form}>
-        <Input
-          placeHolder={"رقم الهاتف"}
-          icon="call-outline"
-          onChangeText={(text) => setPhoneNumber(text)} // Handle phone number input
-          value={phoneNumber}
-          borderColorRed={validation.phoneNumber === false}
-        />
-        <Input
-          placeHolder={"البريد الالكتروني "}
-          icon="mail-outline"
-          onChangeText={(text) => setEmail(text)} // Handle phone number input
-          value={email}
-          borderColorRed={validation.email === false}
-        />
-        <Input
-          placeHolder={" أقرب معلم"}
-          icon="location-outline"
-          onChangeText={(text) => setNearestLocation(text)} // Handle street name input
-          value={nearestLocation}
-          borderColorRed={validation.nearestLocation === false}
-        />
-        <Input
-          placeHolder={"رقم المبنى"}
-          icon="home-outline"
-          onChangeText={(text) => setBuildingNumber(text)} // Handle building number input
-          value={buildingNumber}
-          borderColorRed={validation.buildingNumber === false}
-        />
-        <Input
-          placeHolder={"المتهم "}
-          icon="call-outline"
-          onChangeText={(text) => setAccused(text)} // Handle phone number input
-          value={accused}
-        />
-        <Input
-          placeHolder={"تفاصيل الشكوى"}
-          icon="document-text-outline"
-          multiline={true}
-          style={styles.textArea}
-          onChangeText={(text) => setComplaintDetails(text)} // Handle complaint details input
-          borderColorRed={validation.complaintDetails === false}
-        />
-      </View>
-      <View style={styles.location}>
-        <LocationPicker
-          lat={lat}
-          lng={lng}
-          onPickedLocationHandler={onPickedLocationHandler}
-        />
-      </View>
-      <Button onPress={onSubmitHandler} style={[{ marginBottom: 30 }]}>
-        ارسال
-      </Button>
+      {isLoading && <LoadingIndicator></LoadingIndicator>}
+      {!isLoading && (
+        <>
+          <CustomAlert
+            visible={alertVisible}
+            message={alertMessage}
+            onConfirm={() => setAlertVisible(false)}
+            error={true}
+          ></CustomAlert>
+          <View style={styles.form}>
+            <Input
+              placeHolder={
+                langCtx.language === "ar" ? "رقم الهاتف" : "Phone Number"
+              }
+              icon="call-outline"
+              onChangeText={(text) => setPhoneNumber(text)} // Handle phone number input
+              value={phoneNumber}
+              borderColorRed={validation.phoneNumber === false}
+              hasLabel={true}
+              val={phoneNumber}
+              keyboardType="numeric"
+            />
+            <Input
+              placeHolder={
+                langCtx.language === "ar" ? "البريد الالكتروني" : " Email"
+              }
+              icon="mail-outline"
+              onChangeText={(text) => setEmail(text)} // Handle phone number input
+              value={email}
+              borderColorRed={validation.email === false}
+              hasLabel={true}
+              val={email}
+            />
+            <View style={styles.pickerWrapper}>
+              <Text style={styles.labelText}>
+                {langCtx.language === "en" ? "Municipality" : "البلدية"}
+              </Text>
+              <Picker
+                selectedValue={selectedCity}
+                onValueChange={(itemValue) => {
+                  const selectedCityObject = fetchedComplaints.find(
+                    (city) => city.name === itemValue
+                  );
+                  setSelectedCityId(selectedCityObject?.id);
+                  setSelectedCity(itemValue);
+                  //   console.log(selectedCityId);
+                }}
+                style={styles.picker}
+                itemStyle={styles.pickerItem}
+                mode={"dropdown"}
+              >
+                {fetchedComplaints.map((city) => (
+                  <Picker.Item
+                    key={city.id}
+                    label={
+                      langCtx.language === "en" ? city.name : city.arabicName
+                    }
+                    value={city.name}
+                  />
+                ))}
+              </Picker>
+            </View>
+            <Input
+              placeHolder={
+                langCtx.language === "ar" ? "أقرب معلم" : " Nearest location"
+              }
+              icon="location-outline"
+              onChangeText={(text) => setNearestLocation(text)} // Handle street name input
+              value={nearestLocation}
+              borderColorRed={validation.nearestLocation === false}
+              hasLabel={true}
+              val={nearestLocation}
+            />
+            <Input
+              placeHolder={
+                langCtx.language === "ar" ? "رقم المبنى" : " Building Number"
+              }
+              icon="home-outline"
+              onChangeText={(text) => setBuildingNumber(text)} // Handle building number input
+              value={buildingNumber}
+              borderColorRed={validation.buildingNumber === false}
+              hasLabel={true}
+              val={buildingNumber}
+              keyboardType="numeric"
+            />
+
+            <Input
+              placeHolder={
+                langCtx.language === "ar"
+                  ? "تفاصيل الشكوى"
+                  : " Complaints Details"
+              }
+              icon="document-text-outline"
+              multiline={true}
+              style={styles.textArea}
+              onChangeText={(text) => setComplaintDetails(text)} // Handle complaint details input
+              borderColorRed={validation.complaintDetails === false}
+              hasLabel={true}
+              value={complaintDetails}
+              val={complaintDetails}
+            />
+          </View>
+          <View style={styles.location}>
+            <LocationPicker
+              lat={lat}
+              lng={lng}
+              onPickedLocationHandler={onPickedLocationHandler}
+            />
+          </View>
+          <Button
+            onPress={isEditing ? submitEditedForm : onSubmitHandler}
+            style={[{ marginBottom: 30 }]}
+          >
+            {isEditing
+              ? langCtx.language === "ar"
+                ? "  تعديل "
+                : " Edit"
+              : langCtx.language === "ar"
+              ? "  ارسال "
+              : " Send"}
+          </Button>
+        </>
+      )}
     </ScrollView>
   );
 }
@@ -206,6 +353,7 @@ export default function TakeReportScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    marginHorizontal: 7,
   },
   form: {
     marginVertical: 20,
@@ -220,5 +368,34 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginVertical: 20, // Adds space between the form and the LocationPicker
     padding: 10,
+  },
+
+  pickerWrapper: {
+    marginVertical: 10,
+    alignItems: "center",
+  },
+  labelText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 20, // Adds space between label and picker
+    textAlign: "left", // Aligns text to the left
+  },
+  picker: {
+    width: 200,
+    height: 45,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    backgroundColor: "#f9f9f9",
+    marginBottom: 20,
+  },
+  pickerItem: {
+    height: 50,
+    color: "black",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
   },
 });

@@ -5,11 +5,11 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Dimensions,
 } from "react-native";
 import React, { useState } from "react";
 import Input from "../components/UI/Input";
 import Button from "../components/UI/Button";
-import HeaderImage from "../components/UI/HeaderImage";
 import RegisterImage from "../components/UI/RegisterImage";
 import { Login } from "../utl/apis";
 import LoadingIndicator from "../components/UI/LoadingIndicator";
@@ -19,6 +19,7 @@ import { AuthContext } from "../store/TokenContext.jsx";
 import { LanguageContext } from "../store/languageContext.jsx";
 
 import CustomAlert from "../components/UI/CustomAlert.jsx";
+const { width, height } = Dimensions.get("window");
 
 export default function LoginScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
@@ -40,6 +41,7 @@ export default function LoginScreen({ navigation }) {
       setIsLoading(true);
       Login(userName, password)
         .then((response) => {
+          console.log(response);
           if (response.status === 200) {
             console.log("Login successful:", response.data);
             // Decode the token to get user data
@@ -48,7 +50,7 @@ export default function LoginScreen({ navigation }) {
               name: decodedData.name, // Full name
               email: decodedData.email,
               phoneNumber: decodedData.phone_number,
-              city: decodedData.city,
+              governorateId: decodedData.governorateId,
               userType: decodedData.typ,
               id: decodedData.sub,
               expiration: decodedData.exp,
@@ -59,37 +61,70 @@ export default function LoginScreen({ navigation }) {
             };
             // Authenticate user and store data
             authCtx.authenticate(response.data.token, userData);
+          } else if (response.status === 500) {
+            setAlertMessage(
+              langCtx.language === "en"
+                ? "Sorry, the system is down."
+                : " عذرًا، النظام معطل."
+            );
+            setAlertVisible(true);
+            console.log("response:::", response);
           } else {
+            // Handle other cases, for example, invalid user or password
+            console.log("response:::else ", response);
             if (response.data.detail === "Can not find the specified user") {
-              if (langCtx.language === "ar") {
-                setAlertMessage("لا يوجد مستخدم مسجل بهذا الرقم!");
-                setAlertVisible(true);
-              } else {
-                setAlertMessage("User not found!");
-                setAlertVisible(true);
-              }
+              setAlertMessage(
+                langCtx.language === "ar"
+                  ? "لا يوجد مستخدم مسجل بهذا الرقم!"
+                  : "User not found!"
+              );
+              setAlertVisible(true);
             } else if (
               response.data.detail === "Invalid username or password"
             ) {
-              if (langCtx.language === "ar") {
-                setAlertMessage(" الرقم السري او اسم المستخدم خطأ!");
-                setAlertVisible(true);
-              } else {
-                setAlertMessage(response.data.detail);
-                setAlertVisible(true);
-              }
+              setAlertMessage(
+                langCtx.language === "ar"
+                  ? " الرقم السري او اسم المستخدم خطأ!"
+                  : "Invalid username or password!"
+              );
+              setAlertVisible(true);
+            } else {
+              setAlertMessage(
+                langCtx.language === "ar"
+                  ? "خطأ غير معروف، يرجى المحاولة لاحقًا."
+                  : "Unknown error, please try again later."
+              );
+              setAlertVisible(true);
             }
-            console.log("Login failed:", response.data);
+            console.log("Login failed:", response.status);
           }
         })
         .catch((error) => {
           console.error("Error during login:", error);
-          if (langCtx.language === "ar") {
-            setAlertMessage("يرجى المحاولة لاحقا");
+
+          // Handle different error scenarios based on the type of error
+          if (error.response) {
+            // Server responded with an error status code
+            setAlertMessage(
+              langCtx.language === "ar"
+                ? "حدث خطأ في الخادم، يرجى المحاولة لاحقًا."
+                : "Server error, please try again later."
+            );
+            setAlertVisible(true);
+          } else if (error.request) {
+            // No response from server, network issue
+            setAlertMessage(
+              langCtx.language === "ar"
+                ? "لم يتمكن من الاتصال بالخادم، يرجى التحقق من اتصال الإنترنت."
+                : "Could not connect to the server, please check your internet connection."
+            );
             setAlertVisible(true);
           } else {
+            // Something else went wrong (e.g., request configuration)
             setAlertMessage(
-              "An error occurred during login. Please try again."
+              langCtx.language === "ar"
+                ? "حدث خطأ غير متوقع. يرجى المحاولة لاحقًا."
+                : "An unexpected error occurred. Please try again later."
             );
             setAlertVisible(true);
           }
@@ -98,13 +133,12 @@ export default function LoginScreen({ navigation }) {
           setIsLoading(false); // Ensure loading state is reset
         });
     } else {
-      if (langCtx.language === "ar") {
-        setAlertMessage(" يرجى تعبئة البيانات ");
-        setAlertVisible(true);
-      } else {
-        setAlertMessage(response.data.detail);
-        setAlertVisible(true);
-      }
+      setAlertMessage(
+        langCtx.language === "ar"
+          ? "يرجى تعبئة البيانات بشكل صحيح"
+          : "Please fill the fields correctly!"
+      );
+      setAlertVisible(true);
     }
   }
 
@@ -138,7 +172,14 @@ export default function LoginScreen({ navigation }) {
       {!isLoading && (
         <ScrollView style={styles.screen}>
           <RegisterImage />
-          <View style={[styles.tabs]}>
+          <View
+            style={[
+              styles.tabs,
+              {
+                left: langCtx.language === "en" ? width / 20 : width / 25,
+              },
+            ]}
+          >
             <TouchableOpacity
               onPress={() => navigation.navigate("SignUpScreen")}
               style={[
@@ -149,7 +190,9 @@ export default function LoginScreen({ navigation }) {
                 },
               ]}
             >
-              <Text style={styles.textTab}> حساب جديد </Text>
+              <Text style={styles.textTab}>
+                {langCtx.language === "ar" ? "حساب جديد" : "SignUp"}
+              </Text>
             </TouchableOpacity>
             <View
               style={[
@@ -160,12 +203,18 @@ export default function LoginScreen({ navigation }) {
                 },
               ]}
             >
-              <Text style={styles.textTab}>تسجيل الدخول</Text>
+              <Text style={styles.textTab}>
+                {langCtx.language === "ar" ? "تسجيل الدخول " : "Login"}
+              </Text>
             </View>
           </View>
           <View style={styles.form}>
             <Input
-              placeHolder={"اسم المستخدم "}
+              placeHolder={
+                langCtx.language === "ar"
+                  ? " الرقم الوطني "
+                  : "Nationality Number"
+              }
               logo={"id"}
               keyboardType="numeric"
               borderColorRed={validation.userName === false}
@@ -175,8 +224,9 @@ export default function LoginScreen({ navigation }) {
             ></Input>
 
             <Input
-              placeHolder={" كلمة المرور"}
-              logo={"lock-closed"}
+              placeHolder={
+                langCtx.language === "ar" ? " كلمة المرور" : "password"
+              }
               secureTextEntry={true}
               borderColorRed={validation.password === false}
               onChangeText={(val) => setPassword(val)}
@@ -189,10 +239,18 @@ export default function LoginScreen({ navigation }) {
               navigation.navigate("ForgetPasswordScreen");
             }}
           >
-            <Text style={styles.forgetText}>هل نسيت كلمة المرور؟</Text>
+            <Text style={[styles.forgetText, {}]}>
+              {" "}
+              {langCtx.language === "ar"
+                ? "هل نسيت كلمة المرور؟"
+                : "Forget Password?"}
+            </Text>
           </TouchableOpacity>
           <View style={styles.onButton}>
-            <Button onPress={handleLogin}>الدخول </Button>
+            <Button onPress={handleLogin}>
+              {" "}
+              {langCtx.language === "ar" ? "الدخول " : " Sign in"}
+            </Button>
           </View>
         </ScrollView>
       )}
@@ -215,9 +273,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     position: "absolute",
     top: 140,
-    left: 40,
   },
   tab: {
+    width: width / 2.25,
     borderBottomWidth: 5,
     alignItems: "center",
     justifyContent: "center",
@@ -225,11 +283,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   textTab: {
-    fontSize: 20,
+    fontSize: width < 360 ? 15 : 20,
     fontWeight: "bold",
+    marginBottom: 10,
   },
   forgetContainer: {
-    marginRight: 230,
+    marginHorizontal: 40,
   },
   forgetText: {
     fontSize: 15,

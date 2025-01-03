@@ -1,6 +1,6 @@
 import { Alert } from "react-native";
 
-const GOOGLE_API_KEY = "AIzaSyB3JYciXpGitz8RK5VNodEdiuKBfrq3aF8";
+const GOOGLE_API_KEY = "AIzaSyDpFl2WdKOHjfE8FQQuBiTanc1yPv3bUrc";
 
 export function getMapPreview(lat, lng) {
   if (!lat || !lng || typeof lat !== "number" || typeof lng !== "number") {

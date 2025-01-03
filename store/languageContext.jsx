@@ -1,37 +1,38 @@
 import React, { createContext, useState, useEffect } from "react";
+import * as SecureStore from "expo-secure-store"; // Import expo-secure-store
 
-// Create the context
 export const LanguageContext = createContext({
   language: "",
   toggleLanguage: () => {},
 });
 
-// Language translations
-// const translations = {
-//   en: {
-//     welcome: "Welcome",
-//     changeLanguage: "Switch to Arabic",
-//     theme: "Theme",
-//   },
-//   ar: {
-//     welcome: "مرحبا",
-//     changeLanguage: "التبديل إلى الإنجليزية",
-//     theme: "الثيم",
-//   },
-// };
-
-// Language provider component
 export default function LanguageContextProvider({ children }) {
-  const [language, setLanguage] = useState("ar"); // Default to English
+  const [language, setLanguage] = useState("ar"); // Default to Arabic
 
-  // Function to toggle between languages
+  useEffect(() => {
+    const loadLanguage = async () => {
+      const storedLanguage = await SecureStore.getItemAsync("language"); // Use expo-secure-store instead of SecureStorage
+
+      if (storedLanguage) {
+        console.log("set to :", storedLanguage);
+        setLanguage(storedLanguage);
+      }
+    };
+
+    loadLanguage();
+  }, []);
+
   const toggleLanguage = () => {
-    setLanguage((prevLang) => (prevLang === "en" ? "ar" : "en"));
+    setLanguage((prevLang) => {
+      const newLang = prevLang === "en" ? "ar" : "en";
+      console.log("store to :", newLang);
+      SecureStore.setItemAsync("language", newLang); // Use expo-secure-store instead of SecureStorage
+      return newLang;
+    });
   };
 
   const value = {
     language,
-    //    translations: translations[language], // Current language translations
     toggleLanguage,
   };
 

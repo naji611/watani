@@ -1,7 +1,8 @@
 import { View, ScrollView, StyleSheet } from "react-native";
-import React from "react";
-import HeaderImage from "../components/UI/HeaderImage";
+import React, { useContext } from "react";
+
 import Reports from "../components/UI/HomeScreenSections/Reports";
+import { LanguageContext } from "../store/languageContext";
 const complaintsCat = [
   { id: 1, en: "Areas", ar: "المناطق" },
   {
@@ -16,15 +17,15 @@ const complaintsCat = [
 ];
 
 export default function HomeScreen({ navigation }) {
+  const langCtx = useContext(LanguageContext);
   return (
     <View style={styles.screen}>
-      {/* Content starts here */}
       <ScrollView contentContainerStyle={styles.container}>
         {complaintsCat.map((comp) => {
           return (
             <Reports
               key={comp.id}
-              title={comp.ar}
+              title={langCtx.language === "en" ? comp.en : comp.ar}
               id={comp.id}
               onPress={() => {
                 navigation.navigate("ReportsScreen", { id: comp.id });
@@ -46,7 +47,6 @@ const styles = StyleSheet.create({
     marginTop: 50, // Adjust based on the header height
     paddingBottom: 20,
     alignItems: "center",
-
     paddingBottom: 100,
   },
   headerImage: {

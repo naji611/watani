@@ -4,24 +4,44 @@
     "slug": "Watani",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/wataniLogo.jpg",
+    "icon": "./assets/wataniLogo.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#F4F4F4"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "ACCESS_WIFI_STATE"
+      ],
+      "splash": {
+        "image": "./assets/splash.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#F4F4F4"
+      },
+      "package": "com.boruto.Watani",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDpFl2WdKOHjfE8FQQuBiTanc1yPv3bUrc"
+        }
       }
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    }
+    "extra": {
+      "eas": {
+        "projectId": "5fc53e72-39bf-493a-a29d-b1bd34a16ee1"
+      }
+    },
+    "plugins": ["expo-secure-store", ["expo-build-properties", {}]]
   }
 }

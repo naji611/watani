@@ -1,11 +1,13 @@
-import React from "react";
+import React, { lazy } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import RegisterImage from "../components/UI/RegisterImage";
 import { useContext } from "react";
-import AuthContextProvider, { AuthContext } from "../store/TokenContext.jsx";
+import { LanguageContext } from "../store/languageContext.jsx";
+import { AuthContext } from "../store/TokenContext.jsx";
 export default function SuccessRegistrationScreen({ navigation, route }) {
   const authCtx = useContext(AuthContext);
+  const langCtx = useContext(LanguageContext);
   const handleNextPress = () => {
     authCtx.authenticate(route.params.token, route.params.userData);
   };
@@ -15,13 +17,23 @@ export default function SuccessRegistrationScreen({ navigation, route }) {
       <RegisterImage />
       <View style={styles.container}>
         <Ionicons name="checkmark-circle" style={styles.icon} />
-        <Text style={styles.title}>نجاح التسجيل!</Text>
+        <Text style={styles.title}>
+          {langCtx.language === "ar"
+            ? " نجاح التسجيل!"
+            : "Registration Successful!"}
+        </Text>
         <Text style={styles.message}>
-          تم تسجيلك بنجاح. يمكنك الآن تسجيل الدخول إلى حسابك واستخدام التطبيق.
+          {langCtx.language === "ar"
+            ? " تم تسجيلك بنجاح. يمكنك الآن تسجيل الدخول إلى حسابك واستخدام التطبيق."
+            : "You have registered successfully. You can now log in to your account and use the app."}
         </Text>
 
         <TouchableOpacity style={styles.button} onPress={handleNextPress}>
-          <Text style={styles.buttonText}>الذهاب إلى الصفحة الرئيسية</Text>
+          <Text style={styles.buttonText}>
+            {langCtx.language === "ar"
+              ? "الذهاب إلى الصفحة الرئيسية"
+              : "Go to Home Page"}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

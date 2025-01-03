@@ -1,20 +1,20 @@
-import React from "react";
+import React, { useContext } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import SignUpScreen from "../screens/SignUpScreen";
 import LoginScreen from "../screens/LoginScreen";
 import ForgetPasswordScreen from "../screens/ForgetPasswordScreen";
-import OTPScreen from "../screens/OTPScreen";
+
 import HomeScreen from "../screens/HomeScreen";
 import ReportsScreen from "../screens/ReportsScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import TrackingScreen from "../screens/TrackingScreen";
 import { Ionicons, Feather } from "@expo/vector-icons";
-import HeaderImage from "../components/UI/HeaderImage";
+
 import FeedBackScreen from "../screens/FeedBackScreen";
 import OverViewScreen from "../screens/OverViewScreen";
-import RegisterImage from "../components/UI/RegisterImage";
+
 import TakeReportScreen from "../screens/TakeReportScreen";
 import Map from "../screens/Map";
 import PersonalDetails from "../screens/PersonalDetails";
@@ -23,19 +23,24 @@ import VerifyForgetPasswordFromEmail from "../screens/VerifyForgetPasswordFromEm
 import ResetPasswordScreen from "../screens/ResetPassword";
 import ChangePassword from "../screens/ChangePassword";
 import SuccessComplaintScreen from "../screens/SucccessComplaint";
+import { LanguageContext } from "../store/languageContext";
+import UpdateComplaintsScreen from "../screens/UpdateComplantsScreen";
+import SuccessUpdateScreen from "../screens/SuccessUpdateScreen";
+
 // Create Stack and Tab Navigators
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 // Bottom Tab Navigator for Home section
 function HomeTabs() {
+  const langCtx = useContext(LanguageContext);
   return (
     <Tab.Navigator
       initialRouteName="Home"
       screenOptions={{
-        headerLeft: () => {
-          return <HeaderImage></HeaderImage>;
-        },
+        // headerLeft: () => {
+        //   return <HeaderImage></HeaderImage>;
+        // },
         headerStyle: {
           backgroundColor: "#006400", // Dark green background for header
           height: 100, // Adjusted header height for a more comfortable size
@@ -66,7 +71,8 @@ function HomeTabs() {
         name="Tracking"
         component={TrackingScreen}
         options={{
-          title: "تتبع الشكاوي",
+          title:
+            langCtx.language === "ar" ? "تتبع الشكاوي" : "Tracking Complaints",
           tabBarIcon: ({ color }) => (
             <Ionicons name="analytics-outline" size={24} color={color} />
           ),
@@ -76,7 +82,7 @@ function HomeTabs() {
         name="Home"
         component={HomeScreen}
         options={{
-          title: "الرئيسية",
+          title: langCtx.language === "ar" ? "الرئيسية" : "Home",
           tabBarIcon: ({ color }) => (
             <Ionicons name="home" size={24} color={color} />
           ),
@@ -86,7 +92,7 @@ function HomeTabs() {
         name="Settings"
         component={SettingsScreen}
         options={{
-          title: "الاعدادات",
+          title: langCtx.language === "ar" ? "الاعدادات" : "Settings",
           tabBarIcon: ({ color }) => (
             <Feather name="settings" size={24} color={color} />
           ),
@@ -98,6 +104,7 @@ function HomeTabs() {
 
 // Main Home Stack Navigator holding the Tab Navigator
 export function HomeStackNavigator() {
+  const langCtx = useContext(LanguageContext);
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -119,42 +126,59 @@ export function HomeStackNavigator() {
           name="ReportsScreen"
           component={ReportsScreen}
           options={{
-            title: "شكاوي",
+            title: langCtx.language === "ar" ? "شكاوي" : "Complaints",
           }}
         />
         <Stack.Screen
           name="FeedBackScreen"
           component={FeedBackScreen}
           options={{
-            title: "اكتب رأيك",
+            title: langCtx.language === "ar" ? "اكتب رأيك" : "Feedback",
           }}
         />
         <Stack.Screen
           name="OverViewScreen"
           component={OverViewScreen}
           options={{
-            title: " عن التطبيق",
+            title: langCtx.language === "ar" ? " عن التطبيق" : "About Us",
           }}
         />
-        <Stack.Screen
-          name="TakeReportScreen"
-          component={TakeReportScreen}
-          options={{
-            title: " تعبئة نموذج طلب الشكوى",
-          }}
-        />
+        <Stack.Screen name="TakeReportScreen" component={TakeReportScreen} />
         <Stack.Screen name="Map" component={Map} />
-        <Stack.Screen name="ChangePassword" component={ChangePassword} />
+        <Stack.Screen
+          name="ChangePassword"
+          component={ChangePassword}
+          options={{
+            title:
+              langCtx.language === "ar"
+                ? "تغيير كلمة المرور"
+                : " Change Password",
+          }}
+        />
         <Stack.Screen
           name="PersonalInfo"
           component={PersonalDetails}
           options={{
-            title: "معلوماتي",
+            title: langCtx.language === "ar" ? "معلوماتي" : "Personal Info",
           }}
         />
         <Stack.Screen
           name="SuccessComplaint"
           component={SuccessComplaintScreen}
+          options={{
+            title: "",
+          }}
+        />
+        <Stack.Screen
+          name="UpdateComplaintsScreen"
+          component={UpdateComplaintsScreen}
+        />
+        <Stack.Screen
+          options={{
+            title: "",
+          }}
+          name="SuccessUpdateScreen"
+          component={SuccessUpdateScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>
@@ -181,7 +205,7 @@ export default function RegisterNavigation() {
           name="ForgetPasswordScreen"
           component={ForgetPasswordScreen}
         />
-        <Stack.Screen name="OTPScreen" component={OTPScreen} />
+
         <Stack.Screen name="HomeStack" component={HomeStackNavigator} />
         <Stack.Screen
           name="verifyEmailFromEmail"

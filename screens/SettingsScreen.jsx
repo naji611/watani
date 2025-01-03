@@ -1,88 +1,94 @@
-import { View, Text, StyleSheet } from "react-native";
-import React from "react";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
+import React, { useLayoutEffect } from "react";
 import SettingsTab from "../components/SettingsTab";
 import { useContext } from "react";
 import { AuthContext } from "../store/TokenContext.jsx";
-import ButtonSwitch from "../components/UI/ButtonSwitch.jsx";
-import LanguageSwitch from "../components/UI/LanguageSwitch.jsx";
+import { LanguageContext } from "../store/languageContext.jsx";
+import { TouchableOpacity } from "react-native";
+
 export default function SettingsScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
-  console.log(authCtx.userData);
+  const languageCtx = useContext(LanguageContext);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <View style={styles.headerRight}>
+          <TouchableOpacity
+            onPress={handleSwitchLanguage}
+            style={styles.languageButton}
+          >
+            <Text style={styles.languageButtonText}>
+              {languageCtx.language === "ar" ? "AR" : "EN"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ),
+    });
+  }, [navigation, languageCtx.language]);
+
+  function handleSwitchLanguage() {
+    languageCtx.toggleLanguage();
+    console.log(languageCtx.language);
+  }
+
   return (
-    <>
+    <ScrollView style={styles.scrollView}>
       <View>
         <SettingsTab
-          title={authCtx.userData.name}
-          subTitle={authCtx.userData.primaryNumber}
+          title={languageCtx.language === "ar" ? "معلوماتي" : "Personal Info"}
           icon="person-circle"
-          onPress={() => {
-            navigation.navigate("PersonalInfo");
-          }}
-        ></SettingsTab>
+          onPress={() => navigation.navigate("PersonalInfo")}
+        />
         <SettingsTab
-          title={"الاراء "}
+          title={languageCtx.language === "ar" ? "الاراء " : "Feedback"}
           icon="chatbubbles-outline"
-          onPress={() => {
-            navigation.navigate("FeedBackScreen");
-          }}
-        ></SettingsTab>
+          onPress={() => navigation.navigate("FeedBackScreen")}
+        />
         <SettingsTab
-          title={"عن التطبيق"}
+          title={languageCtx.language === "ar" ? "عن التطبيق" : "About Us "}
           icon="alert-circle-outline"
-          onPress={() => {
-            navigation.navigate("OverViewScreen");
-          }}
-        ></SettingsTab>
+          onPress={() => navigation.navigate("OverViewScreen")}
+        />
         <SettingsTab
-          title={"تغيير كلمة المرور "}
+          title={
+            languageCtx.language === "ar"
+              ? "تغيير كلمة المرور "
+              : "Change Password"
+          }
           icon="lock-closed-outline"
-          onPress={() => {
-            navigation.navigate("ChangePassword");
-          }}
-        ></SettingsTab>
+          onPress={() => navigation.navigate("ChangePassword")}
+        />
         <SettingsTab
-          title={"تسجبل الخروج"}
+          title={languageCtx.language === "ar" ? "تسجيل الخروج" : "Logout"}
           icon="log-out-outline"
-          onPress={() => {
-            authCtx.logout();
-          }}
-        ></SettingsTab>
+          onPress={authCtx.logout}
+        />
       </View>
-      <View style={styles.container}>
-        <View style={styles.container}>
-          <View style={styles.row}>
-            <Text style={styles.label}>EN</Text>
-            <LanguageSwitch />
-            <Text style={styles.label}>AR</Text>
-          </View>
-        </View>
-        <View style={styles.container}>
-          <View style={styles.row}>
-            <Text style={styles.label}>Dark</Text>
-            <ButtonSwitch />
-            <Text style={styles.label}>Light</Text>
-          </View>
-        </View>
-      </View>
-    </>
+    </ScrollView>
   );
 }
+
 const styles = StyleSheet.create({
-  container: {
+  scrollView: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-    backgroundColor: "#f5f5f5", // Light background color for better contrast
+    backgroundColor: "#f5f5f5", // Light background for better contrast
   },
-  row: {
+  headerRight: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center", // Align items vertically centered
-    width: "80%", // Adjust the width as needed
+    alignItems: "center",
   },
-  label: {
-    fontSize: 18,
-    color: "#333", // Default text color
+  languageButton: {
+    width: 55,
+    padding: 5,
+    borderRadius: 5,
+    marginRight: 10,
+    justifyContent: "center",
+    backgroundColor: "#90B8B0",
+  },
+  languageButtonText: {
+    textAlign: "center",
+    padding: 5,
+    color: "white",
   },
 });

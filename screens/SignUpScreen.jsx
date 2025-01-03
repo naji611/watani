@@ -4,14 +4,16 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  Dimensions,
 } from "react-native";
-import { Alert } from "react-native";
+
 import React, { useState } from "react";
 import Input from "../components/UI/Input";
 import Button from "../components/UI/Button";
 import RegisterImage from "../components/UI/RegisterImage";
 import RadioGroup from "react-native-radio-buttons-group";
 import { Picker } from "@react-native-picker/picker";
+import RNPickerSelect from "react-native-picker-select";
 import {
   RegisterJordanian,
   RegisterJordanianWomenChild,
@@ -22,40 +24,48 @@ import { useContext } from "react";
 import AuthContextProvider, { AuthContext } from "../store/TokenContext.jsx";
 import LoadingIndicator from "../components/UI/LoadingIndicator";
 import decodeToken from "../utl/converToken.js";
+import CustomAlert from "../components/UI/CustomAlert.jsx";
+import { LanguageContext } from "../store/languageContext.jsx";
+const { width, height } = Dimensions.get("window");
 const jordanCitiesEN = [
   { id: 1, name: "Amman" },
-  { id: 2, name: "Zarqa" },
-  { id: 3, name: "Irbid" },
-  { id: 4, name: "Aqaba" },
+  { id: 2, name: "Irbid" },
+  { id: 3, name: "Ajloun" },
+  { id: 4, name: "Jerash" },
   { id: 5, name: "Mafraq" },
-  { id: 6, name: "Salt" },
-  { id: 7, name: "Madaba" },
-  { id: 8, name: "Jerash" },
-  { id: 9, name: "Ajloun" },
-  { id: 10, name: "Ma'an" },
-  { id: 11, name: "Karak" },
-  { id: 12, name: "Tafilah" },
+  { id: 6, name: "Balqa" },
+  { id: 7, name: "Zarqa" },
+  { id: 8, name: "Madaba" },
+  { id: 9, name: "Karak" },
+  { id: 10, name: "Tafilah" },
+  { id: 11, name: "Ma'an" },
+  { id: 12, name: "Aqaba" },
 ];
+
 const jordanCitiesAR = [
   { id: 1, name: "عمان" },
-  { id: 2, name: "الزرقاء" },
-  { id: 3, name: "إربد" },
-  { id: 4, name: "العقبة" },
+  { id: 2, name: "إربد" },
+  { id: 3, name: "عجلون" },
+  { id: 4, name: "جرش" },
   { id: 5, name: "المفرق" },
-  { id: 6, name: "السلط" },
-  { id: 7, name: "مادبا" },
-  { id: 8, name: "جرش" },
-  { id: 9, name: "عجلون" },
-  { id: 10, name: "معان" },
-  { id: 11, name: "الكرك" },
-  { id: 12, name: "الطفيلة" },
+  { id: 6, name: "البلقاء" },
+  { id: 7, name: "الزرقاء" },
+  { id: 8, name: "مادبا" },
+  { id: 9, name: "الكرك" },
+  { id: 10, name: "الطفيلة" },
+  { id: 11, name: "معان" },
+  { id: 12, name: "العقبة" },
 ];
 
 export default function SignUpScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
+  const langCtx = useContext(LanguageContext);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertError, setAlertError] = useState(false);
   const [activeScreen, setActiveScreen] = useState("signUp");
   const [selectedId, setSelectedId] = useState("1");
-  const [selectedCity, setSelectedCity] = useState(jordanCitiesAR[0].name);
+  const [selectedCity, setSelectedCity] = useState(jordanCitiesAR[0].id);
   const [firstName, setFirstName] = useState("");
   const [secondName, setSecondName] = useState("");
   const [thirdName, setThirdName] = useState("");
@@ -73,6 +83,7 @@ export default function SignUpScreen({ navigation }) {
   const [birthYear, setBirthYear] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [workflow, setWorkflow] = useState(1);
   const [validation, setValidation] = useState({
     firstName: true,
     secondName: true,
@@ -109,115 +120,140 @@ export default function SignUpScreen({ navigation }) {
     personalNumber: null,
     birthYear: null,
   });
-
+  const cityList = langCtx.language === "en" ? jordanCitiesEN : jordanCitiesAR;
   function validInputs() {
     let updatedValidation = { ...validation };
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
     const phoneRegex = /^07[789]\d{7}$/;
 
+    let isValid = true;
+
+    // General validation for all cases
     if (!emailRegex.test(email.trim())) {
       updatedValidation.email = false;
-      console.log("Invalid email");
+      isValid = false;
     } else {
       updatedValidation.email = true;
     }
 
     if (firstName === "") {
       updatedValidation.firstName = false;
+      isValid = false;
     } else {
       updatedValidation.firstName = true;
     }
 
     if (secondName === "") {
-      // Check for an empty string instead of length < 0
       updatedValidation.secondName = false;
+      isValid = false;
     } else {
       updatedValidation.secondName = true;
     }
 
     if (thirdName === "") {
-      // Same logic applied here
       updatedValidation.thirdName = false;
+      isValid = false;
     } else {
       updatedValidation.thirdName = true;
     }
 
     if (LastName === "") {
-      // Same logic applied here
       updatedValidation.LastName = false;
+      isValid = false;
     } else {
       updatedValidation.LastName = true;
     }
 
     if (!phoneRegex.test(phoneNumber)) {
       updatedValidation.phoneNumber = false;
+      isValid = false;
     } else {
       updatedValidation.phoneNumber = true;
     }
 
     if (!passwordRegex.test(password)) {
       updatedValidation.password = false;
+      isValid = false;
     } else {
       updatedValidation.password = true;
     }
+
     if (!passwordRegex.test(password) || confirmPassword !== password) {
       updatedValidation.confirmPassword = false;
+      isValid = false;
     } else {
       updatedValidation.confirmPassword = true;
     }
+
+    // Conditional validation based on selectedId
     if (selectedId === "1") {
+      // Validation for Jordanian users
       if (nationalityId.length !== 10) {
         updatedValidation.nationalityId = false;
+        isValid = false;
       } else {
         updatedValidation.nationalityId = true;
       }
+
       if (identityNumber.length !== 8) {
         updatedValidation.identityNumber = false;
+        isValid = false;
       } else {
-        setIdentityNumber(identityNumber.toUpperCase());
         updatedValidation.identityNumber = true;
       }
     } else if (selectedId === "2") {
+      // Validation for Jordanian Women Child users
       if (serialNumberJordanSn.length !== 10) {
         updatedValidation.serialNumberJordanSn = false;
+        isValid = false;
       } else {
         updatedValidation.serialNumberJordanSn = true;
       }
+
       if (documentNumberJordanSn.length !== 8) {
         updatedValidation.documentNumberJordanSn = false;
+        isValid = false;
       } else {
         updatedValidation.documentNumberJordanSn = true;
       }
     } else if (selectedId === "3") {
+      // Validation for Gaza Sons users
       if (fileNumberGaza.length !== 10) {
         updatedValidation.fileNumberGaza = false;
+        isValid = false;
       } else {
         updatedValidation.fileNumberGaza = true;
       }
 
       if (documentNumberGaza.length !== 8) {
         updatedValidation.documentNumberGaza = false;
+        isValid = false;
       } else {
         updatedValidation.documentNumberGaza = true;
       }
     } else if (selectedId === "4") {
+      // Validation for Foreign users
       if (personalNumber.length !== 10) {
         updatedValidation.personalNumber = false;
+        isValid = false;
       } else {
         updatedValidation.personalNumber = true;
       }
+
       if (birthYear.length !== 4) {
         updatedValidation.birthYear = false;
+        isValid = false;
       } else {
         updatedValidation.birthYear = true;
       }
     }
 
     setValidation(updatedValidation);
+    return isValid; // Return true if all relevant validations pass
   }
 
-  const radioButtons = [
+  const radioButtonsAR = [
     {
       id: "1",
       label: "أردني", // Jordanian
@@ -248,411 +284,298 @@ export default function SignUpScreen({ navigation }) {
       containerStyle: styles.radioContainer,
     },
   ];
+  const radioButtonsEN = [
+    {
+      id: "1",
+      label: "Jordanian",
+      value: "jordanian",
+      selected: true,
+      labelStyle: styles.radioLabel,
+      containerStyle: styles.radioContainer,
+    },
+    {
+      id: "2",
+      label: "Children of Jordanian Women",
+      value: "children_of_jordanian_women",
+      labelStyle: styles.radioLabel,
+      containerStyle: styles.radioContainer,
+    },
+    {
+      id: "3",
+      label: "Children of Gaza",
+      value: "children_of_gaza",
+      labelStyle: styles.radioLabel,
+      containerStyle: styles.radioContainer,
+    },
+    {
+      id: "4",
+      label: "Foreigner",
+      value: "foreigner",
+      labelStyle: styles.radioLabel,
+      containerStyle: styles.radioContainer,
+    },
+  ];
 
   function onPressRadioButton(selectedId) {
     // setRadioButtons(radioButtonsArray);
     console.log(selectedId);
     setSelectedId(selectedId);
   }
-  function onSubmit() {
-    validInputs();
-    if (selectedId == 1) {
-      if (
-        validation.firstName &&
-        validation.email &&
-        validation.secondName &&
-        validation.thirdName &&
-        validation.LastName &&
-        validation.nationalityId &&
-        validation.identityNumber &&
-        validation.phoneNumber &&
-        validation.password &&
-        validation.confirmPassword
-      ) {
-        console.log({
-          firstName,
-          secondName,
-          thirdName,
-          LastName,
-          phoneNumber,
-          email: email.trim(),
-          password,
-          City: selectedCity,
-          nationalityNumber: nationalityId,
-          verificationMechanism: "IdentityNumber",
-          identityNumber,
-          City: selectedCity,
-          civilRegistrationNumber: null,
-        });
-        setIsLoading(true);
-        RegisterJordanian({
-          firstName,
-          secondName,
-          thirdName,
-          LastName,
-          phoneNumber,
-          email: email.trim(),
-          password,
-          nationalityNumber: nationalityId,
-          verificationMechanism: "IdentityNumber",
-          identityNumber: identityNumber.toUpperCase(),
-          City: selectedCity,
-          civilRegistrationNumber: null,
-        })
-          .then((response) => {
-            setIsLoading(false);
-            if (response.status === 200) {
-              console.log("Registration successful:", response.data.token);
-              const decodedData = decodeToken(response.data.token);
-              const userData = {
-                name: decodedData.name, // Full name
-                email: decodedData.email,
-                phoneNumber: decodedData.phone_number,
-                city: decodedData.city,
-                userType: decodedData.typ,
-                id: decodedData.sub,
-                expiration: decodedData.exp,
-                primaryNumber: decodedData.nameid,
-                phoneNumber: decodedData.phone_number,
-                isEmailConfirmed: decodedData.isEmailConfirmed,
+  // Validation function for Jordanians
+  function isValidJordanian() {
+    return (
+      validation.firstName &&
+      validation.email &&
+      validation.secondName &&
+      validation.thirdName &&
+      validation.LastName &&
+      validation.nationalityId &&
+      validation.identityNumber &&
+      validation.phoneNumber &&
+      validation.password &&
+      validation.confirmPassword
+    );
+  }
 
-                // Add any other fields as needed
-              };
-              navigation.navigate("SuccessRegistrationScreen", {
-                token: response.data.token,
-                userData: userData,
-              });
-            } else if (response.status === 500) {
-              Alert.alert("sorry", "the system is down");
-            } else {
-              console.log(
-                "Registration failed:",
-                response.data.detail
-                  ? Alert.alert("check  your data", response.data.detail)
-                  : response.data.errors
-                  ? Alert.alert("validation Error", response.data.errors[0])
-                  : response
-              );
-            }
-          })
-          .catch((error) => {
-            // Check if it's a 400 error
-            if (error.response && error.response.status === 400) {
-              const errorData = error.response.data;
+  // Validation function for Jordanian Women and Children
+  function isValidJordanianWomenChild() {
+    return (
+      validation.firstName &&
+      validation.secondName &&
+      validation.thirdName &&
+      validation.LastName &&
+      validation.phoneNumber &&
+      validation.email &&
+      validation.password &&
+      validation.documentNumberJordanSn &&
+      validation.serialNumberJordanSn
+    );
+  }
 
-              // Handle validation errors (field-specific)
-              if (errorData.errors) {
-                const errors = errorData.errors;
-                console.log("Validation errors:", errors);
-              }
-              // Handle general errors
-              else if (errorData.detail) {
-                setErrorMessage({ general: errorData.detail });
-                console.log("General error:", errorData.detail);
-              }
-            } else {
-              console.log("Error during registration:", error);
-            }
-          })
-          .finally(() => {
-            // Always called at the end, whether success or failure
-            setIsLoading(false);
-          });
+  // Validation function for Gaza Sons
+  function isValidGazaSon() {
+    return (
+      validation.firstName &&
+      validation.secondName &&
+      validation.thirdName &&
+      validation.LastName &&
+      validation.phoneNumber &&
+      validation.email &&
+      validation.password &&
+      validation.documentNumberGaza &&
+      validation.fileNumberGaza
+    );
+  }
+
+  function isValidForeign() {
+    return (
+      validation.firstName &&
+      validation.secondName &&
+      validation.thirdName &&
+      validation.LastName &&
+      validation.phoneNumber &&
+      validation.email &&
+      validation.password &&
+      validation.personalNumber &&
+      validation.birthYear
+    );
+  }
+  function handleRegistrationSuccess(response) {
+    const decodedData = decodeToken(response.data.token);
+    const userData = {
+      name: decodedData.name,
+      email: decodedData.email,
+      phoneNumber: decodedData.phone_number,
+      governorateId: decodedData.governorateId,
+      userType: decodedData.typ,
+      id: decodedData.sub,
+      expiration: decodedData.exp,
+      primaryNumber: decodedData.nameid,
+      isEmailConfirmed: decodedData.isEmailConfirmed,
+    };
+    navigation.navigate("SuccessRegistrationScreen", {
+      token: response.data.token,
+      userData: userData,
+    });
+  }
+  function handleRegistrationFailure(response) {
+    const isEnglish = langCtx.language === "en"; // Check the current language
+
+    if (response.status === 500) {
+      setAlertMessage(
+        isEnglish ? "Sorry, the system is down." : "500عذرًا، النظام معطل."
+      );
+      setAlertError(true);
+      setAlertVisible(true);
+    } else {
+      if (response.data.detail) {
+        setAlertMessage(
+          isEnglish
+            ? `Registration failed, ${response.data.detail}`
+            : `فشل التسجيل، ${response.data.detail}`
+        );
+        setAlertError(true);
+        setAlertVisible(true);
       }
-    } else if (selectedId == 2) {
-      if (
-        validation.firstName &&
-        validation.secondName &&
-        validation.thirdName &&
-        validation.LastName &&
-        validation.phoneNumber &&
-        validation.email &&
-        validation.password &&
-        validation.documentNumberJordanSn &&
-        validation.serialNumberJordanSn
-      ) {
-        console.log({
-          firstName,
-          secondName,
-          thirdName,
-          LastName,
-          phoneNumber,
-          email,
-          password,
-          City: selectedCity,
-          documentNumber: documentNumberJordanSn,
-          serialNumber: serialNumberJordanSn,
-        });
-        setIsLoading(true);
-        RegisterJordanianWomenChild({
-          firstName,
-          secondName,
-          thirdName,
-          LastName,
-          phoneNumber,
-          email: email.trim(),
-          password,
-          City: selectedCity,
-          documentNumber: documentNumberJordanSn,
-          serialNumber: serialNumberJordanSn,
-        })
-          .then((response) => {
-            if (response.status === 200) {
-              console.log("Registration successful:", response.data.token);
-              const decodedData = decodeToken(response.data.token);
-              const userData = {
-                name: decodedData.name, // Full name
-                email: decodedData.email,
-                phoneNumber: decodedData.phone_number,
-                city: decodedData.City,
-                userType: decodedData.typ,
-                id: decodedData.sub,
-                expiration: decodedData.exp,
-                primaryNumber: decodedData.nameid,
-                phoneNumber: decodedData.phone_number,
-                // Add any other fields as needed
-              };
-              navigation.navigate("SuccessRegistrationScreen", {
-                token: response.data.token,
-                userData: userData,
-              });
-            } else if (response.status === 500) {
-              Alert.alert("sorry", "the system is down");
-            } else {
-              console.log(
-                "Registration failed:",
-                response.data.detail
-                  ? Alert.alert("check  your data", response.data.detail)
-                  : response.data.errors
-                  ? Alert.alert("validation Error", response.data.errors[0])
-                  : response
-              );
-            }
-          })
-          .catch((error) => {
-            // Check if it's a 400 error
-            if (error.response && error.response.status === 400) {
-              const errorData = error.response.data;
 
-              // Handle validation errors (field-specific)
-              if (errorData.errors) {
-                const errors = errorData.errors;
-                console.log("Validation errors:", errors);
-              }
-              // Handle general errors
-              else if (errorData.detail) {
-                setErrorMessage({ general: errorData.detail });
-                console.log("General error:", errorData.detail);
-              }
-            } else {
-              console.log("Error during registration:", error);
-            }
-          })
-          .finally(() => {
-            // Always called at the end, whether success or failure
-            setIsLoading(false);
-          });
-      } else {
-        console.error("Validation failed. Please fill in all required fields.");
-      }
-    } else if (selectedId == 3) {
-      if (
-        validation.firstName &&
-        validation.secondName &&
-        validation.thirdName &&
-        validation.LastName &&
-        validation.phoneNumber &&
-        validation.email &&
-        validation.password &&
-        validation.documentNumberGaza &&
-        validation.fileNumberGaza
-      ) {
-        console.log({
-          firstName,
-          secondName,
-          thirdName,
-          LastName,
-          phoneNumber,
-          email,
-          password,
-          City: selectedCity,
-          documentNumber: documentNumberGaza,
-          fileNumber: fileNumberGaza,
-        });
-        setIsLoading(true);
-        RegisterGazaSons({
-          firstName,
-          secondName,
-          thirdName,
-          LastName,
-          phoneNumber,
-          email: email.trim(),
-          password,
-          City: selectedCity,
-          documentNumber: documentNumberGaza,
-          fileNumber: fileNumberGaza,
-        })
-          .then((response) => {
-            if (response.status === 200) {
-              console.log("Registration successful:", response.data.token);
-              const decodedData = decodeToken(response.data.token);
-              const userData = {
-                name: decodedData.name, // Full name
-                email: decodedData.email,
-                phoneNumber: decodedData.phone_number,
-                city: decodedData.City,
-                userType: decodedData.typ,
-                id: decodedData.sub,
-                expiration: decodedData.exp,
-                primaryNumber: decodedData.nameid,
-                phoneNumber: decodedData.phone_number,
-                // Add any other fields as needed
-              };
-              navigation.navigate("SuccessRegistrationScreen", {
-                token: response.data.token,
-                userData: userData,
-              });
-            } else if (response.status === 500) {
-              Alert.alert("sorry", "the system is down");
-            } else if (response.status === 500) {
-              Alert.alert("sorry", "the system is down");
-            } else {
-              console.log(
-                "Registration failed:",
-                response.data.detail
-                  ? Alert.alert("check  your data", response.data.detail)
-                  : response.data.errors
-                  ? Alert.alert("validation Error", response.data.errors[0])
-                  : response
-              );
-            }
-          })
-          .catch((error) => {
-            // Check if it's a 400 error
-            if (error.response && error.response.status === 400) {
-              const errorData = error.response.data;
+      if (response.data.errors) {
+        console.log(response.data.errors);
 
-              // Handle validation errors (field-specific)
-              if (errorData.errors) {
-                const errors = errorData.errors;
-                console.log("Validation errors:", errors);
-              }
-              // Handle general errors
-              else if (errorData.detail) {
-                setErrorMessage({ general: errorData.detail });
-                console.log("General error:", errorData.detail);
-              }
-            } else {
-              console.log("Error during registration:", error);
-            }
-          })
-          .finally(() => {
-            // Always called at the end, whether success or failure
-            setIsLoading(false);
-          });
-      } else {
-        console.error("Validation failed. Please fill in all required fields.");
-      }
-    } else if (selectedId == 4) {
-      if (
-        validation.firstName &&
-        validation.secondName &&
-        validation.thirdName &&
-        validation.LastName &&
-        validation.phoneNumber &&
-        validation.email &&
-        validation.password &&
-        validation.personalNumber &&
-        validation.birthYear
-      ) {
-        console.log({
-          firstName,
-          secondName,
-          thirdName,
-          LastName,
-          phoneNumber,
-          email,
-          password,
-          City: selectedCity,
-          personalNumber,
-          yearOfBirth: birthYear,
-        });
-        setIsLoading(true);
-        RegisterForeign({
-          firstName,
-          secondName,
-          thirdName,
-          LastName,
-          phoneNumber,
-          email: email.trim(),
-          password,
-          City: selectedCity,
-          personalNumber,
-          yearOfBirth: birthYear,
-        })
-          .then((response) => {
-            if (response.status === 200) {
-              console.log("Registration successful:", response.data.token);
-              const decodedData = decodeToken(response.data.token);
-              const userData = {
-                name: decodedData.name, // Full name
-                email: decodedData.email,
-                phoneNumber: decodedData.phone_number,
-                city: decodedData.City,
-                userType: decodedData.typ,
-                id: decodedData.sub,
-                expiration: decodedData.exp,
-                primaryNumber: decodedData.nameid,
-                phoneNumber: decodedData.phone_number,
-                // Add any other fields as needed
-              };
-              navigation.navigate("SuccessRegistrationScreen", {
-                token: response.data.token,
-                userData: userData,
-              });
-            } else if (response.status === 500) {
-              Alert.alert("sorry", "the system is down");
-            } else {
-              console.log(
-                "Registration failed:",
-                response.data.detail
-                  ? Alert.alert("check  your data", response.data.detail)
-                  : response.data.errors
-                  ? response.data.errors
-                  : response
-              );
-            }
-          })
-          .catch((error) => {
-            // Check if it's a 400 error
-            if (error.response && error.response.status === 400) {
-              const errorData = error.response.data;
+        if (response.data.errors.DocumentNumber) {
+          setAlertMessage(
+            isEnglish
+              ? "Document Number is not in the correct format."
+              : "رقم المستند ليس بالتنسيق الصحيح."
+          );
+        } else if (response.data.errors.SerialNumber) {
+          setAlertMessage(
+            isEnglish
+              ? "Serial Number is not in the correct format."
+              : "الرقم التسلسلي ليس بالتنسيق الصحيح."
+          );
+        } else if (response.data.errors.FileNumber) {
+          setAlertMessage(
+            isEnglish
+              ? "File Number is not in the correct format."
+              : "رقم الملف ليس بالتنسيق الصحيح."
+          );
+        } else if (response.data.errors.PersonalNumber) {
+          setAlertMessage(
+            isEnglish
+              ? "Personal Number is not in the correct format."
+              : "الرقم الشخصي ليس بالتنسيق الصحيح."
+          );
+        }
 
-              // Handle validation errors (field-specific)
-              if (errorData.errors) {
-                const errors = errorData.errors;
-                console.log("Validation errors:", errors);
-              }
-              // Handle general errors
-              else if (errorData.detail) {
-                setErrorMessage({ general: errorData.detail });
-                console.log("General error:", errorData.detail);
-              }
-            } else {
-              console.log("Error during registration:", error);
-            }
-          })
-          .finally(() => {
-            // Always called at the end, whether success or failure
-            setIsLoading(false);
-          });
-      } else {
-        console.error("Validation failed. Please fill in all required fields.");
+        // Set the alert after the specific error
+        setAlertError(true);
+        setAlertVisible(true);
       }
     }
   }
+
+  function handleError(error) {
+    if (error.response && error.response.status === 400) {
+      console.log("error:", error);
+      const errorData = error.response.data;
+      if (errorData.errors) {
+        console.log("Validation errors:", errorData.errors);
+      } else if (errorData.detail) {
+        setErrorMessage({ general: errorData.detail });
+        console.log("General error:", errorData.detail);
+      }
+    } else {
+      console.log("Error during registration:", error);
+    }
+  }
+
+  function submitRegistration(apiCall, registrationData) {
+    setIsLoading(true);
+    apiCall(registrationData)
+      .then((response) => {
+        if (response.status === 200) {
+          handleRegistrationSuccess(response);
+        } else {
+          handleRegistrationFailure(response);
+        }
+      })
+      .catch(handleError)
+      .finally(() => setIsLoading(false));
+  }
+  function onSubmit() {
+    const isFormValid = validInputs();
+
+    // Registration flow for Jordanians
+    if (selectedId == 1 && isFormValid) {
+      const registrationData = {
+        firstName,
+        secondName,
+        thirdName,
+        LastName,
+        phoneNumber,
+        email: email.trim(),
+        password,
+        governorateId: selectedCity,
+        nationalityNumber: nationalityId,
+        verificationMechanism: "IdentityNumber",
+        identityNumber: identityNumber.toUpperCase(),
+        civilRegistrationNumber: null,
+      };
+      submitRegistration(RegisterJordanian, registrationData);
+    }
+    // Registration flow for Jordanian Women and Children
+    else if (selectedId == 2 && isFormValid) {
+      const registrationData = {
+        firstName,
+        secondName,
+        thirdName,
+        LastName,
+        phoneNumber,
+        email: email.trim(),
+        password,
+        governorateId: selectedCity,
+        documentNumber: documentNumberJordanSn,
+        serialNumber: serialNumberJordanSn,
+      };
+      submitRegistration(RegisterJordanianWomenChild, registrationData);
+    }
+    // Registration flow for Gaza Sons
+    else if (selectedId == 3 && isFormValid) {
+      const registrationData = {
+        firstName,
+        secondName,
+        thirdName,
+        LastName,
+        phoneNumber,
+        email: email.trim(),
+        password,
+        governorateId: selectedCity,
+        documentNumber: documentNumberGaza,
+        fileNumber: fileNumberGaza,
+      };
+      submitRegistration(RegisterGazaSons, registrationData);
+    }
+    // Registration flow for Foreigners
+    else if (selectedId == 4 && isFormValid) {
+      const registrationData = {
+        firstName,
+        secondName,
+        thirdName,
+        LastName,
+        phoneNumber,
+        email: email.trim(),
+        password,
+        governorateId: selectedCity,
+        personalNumber,
+        yearOfBirth: birthYear,
+      };
+      submitRegistration(RegisterForeign, registrationData);
+    }
+    // Fallback for invalid inputs
+    else {
+      setAlertMessage(
+        langCtx.language === "en"
+          ? "Validation failed. Please fill in all required fields."
+          : " . يرجى ملء جميع الحقول المطلوبة."
+      );
+      setAlertError(true);
+      setAlertVisible(true);
+      console.log(
+        langCtx.language === "en"
+          ? "Validation failed. Please fill in all required fields."
+          : " . يرجى ملء جميع الحقول المطلوبة."
+      );
+    }
+  }
+
   return (
     <>
+      <CustomAlert
+        visible={alertVisible}
+        message={alertMessage}
+        onConfirm={() => setAlertVisible(false)}
+        error={alertError}
+      ></CustomAlert>
       {isLoading && <LoadingIndicator />}
       {!isLoading && (
         <ScrollView
@@ -660,7 +583,14 @@ export default function SignUpScreen({ navigation }) {
           contentContainerStyle={styles.scrollViewContent}
         >
           <RegisterImage />
-          <View style={[styles.tabs]}>
+          <View
+            style={[
+              styles.tabs,
+              {
+                left: langCtx.language === "en" ? width / 20 : width / 25,
+              },
+            ]}
+          >
             <TouchableOpacity
               style={[
                 styles.tab,
@@ -670,7 +600,10 @@ export default function SignUpScreen({ navigation }) {
                 },
               ]}
             >
-              <Text style={styles.textTab}> حساب جديد </Text>
+              <Text style={styles.textTab}>
+                {" "}
+                {langCtx.language === "ar" ? "حساب جديد" : "SignUp"}{" "}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => navigation.navigate("LoginScreen")}
@@ -682,23 +615,35 @@ export default function SignUpScreen({ navigation }) {
                 },
               ]}
             >
-              <Text style={styles.textTab}>تسجيل الدخول</Text>
+              <Text style={styles.textTab}>
+                {" "}
+                {langCtx.language === "ar" ? "تسجيل الدخول " : "Login"}{" "}
+              </Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.form}>
-            <Text style={styles.title}>الجنسية</Text>
+            <Text style={styles.title}>
+              {langCtx.language === "ar" ? " الجنسية" : "Nationality"}
+            </Text>
             <RadioGroup
-              radioButtons={radioButtons}
+              radioButtons={
+                langCtx.language === "ar" ? radioButtonsAR : radioButtonsEN
+              }
               onPress={onPressRadioButton}
-              layout="row" // Layout in a row
-              containerStyle={styles.radioGroup}
+              layout="row" // Keep this for a row layout
+              containerStyle={[
+                styles.radioGroup,
+                selectedId === "yourId" ? styles.selectedContainer : null,
+              ]}
               selectedId={selectedId}
-              color="green"
             />
+
             <View style={styles.rowInputs}>
               <Input
-                placeHolder={"الاسم الثاني "}
+                placeHolder={
+                  langCtx.language === "ar" ? "الاسم الثاني " : "Second name"
+                }
                 logo={"person"}
                 width="small"
                 onChangeText={(val) => setSecondName(val)}
@@ -707,7 +652,9 @@ export default function SignUpScreen({ navigation }) {
                 maxLength={50}
               />
               <Input
-                placeHolder={"الاسم الاول"}
+                placeHolder={
+                  langCtx.language === "ar" ? "الاسم الاول " : "First name"
+                }
                 logo={"person"}
                 width="small"
                 onChangeText={(val) => setFirstName(val)}
@@ -718,7 +665,9 @@ export default function SignUpScreen({ navigation }) {
             </View>
             <View style={styles.rowInputs}>
               <Input
-                placeHolder={"الاسم الرابع "}
+                placeHolder={
+                  langCtx.language === "ar" ? "الاسم الرابع " : "Fourth name"
+                }
                 logo={"person"}
                 width="small"
                 onChangeText={(val) => setLastName(val)}
@@ -728,7 +677,9 @@ export default function SignUpScreen({ navigation }) {
               />
 
               <Input
-                placeHolder={"الاسم الثالث"}
+                placeHolder={
+                  langCtx.language === "ar" ? "الاسم الثالث " : "Third name"
+                }
                 logo={"person"}
                 width="small"
                 onChangeText={(val) => setThirdName(val)}
@@ -738,24 +689,23 @@ export default function SignUpScreen({ navigation }) {
               />
             </View>
             <View style={styles.pickerWrapper}>
-              <Picker
-                selectedValue={selectedCity}
-                onValueChange={(itemValue) => setSelectedCity(itemValue)}
-                style={styles.picker}
-                itemStyle={styles.pickerItem} // Bold text applied here
-                mode={"dropdown"}
-              >
-                {jordanCitiesAR.map((city) => (
-                  <Picker.Item
-                    key={city.id}
-                    label={city.name}
-                    value={city.name}
-                  />
-                ))}
-              </Picker>
+              <RNPickerSelect
+                onValueChange={(value) => setSelectedCity(value)}
+                items={cityList.map((city) => ({
+                  label: city.name,
+                  value: city.id,
+                }))}
+                value={selectedCity}
+                style={{
+                  inputAndroid: styles.picker,
+                  inputIOS: styles.picker,
+                }}
+              />
             </View>
             <Input
-              placeHolder={" البريد الالكتروني"}
+              placeHolder={
+                langCtx.language === "ar" ? " البريد الالكتروني" : " Email"
+              }
               logo={"mail"}
               onChangeText={(val) => setEmail(val)}
               value={email}
@@ -764,7 +714,11 @@ export default function SignUpScreen({ navigation }) {
             {selectedId === "1" && (
               <>
                 <Input
-                  placeHolder={"الرقم الوطني"}
+                  placeHolder={
+                    langCtx.language === "ar"
+                      ? "الرقم الوطني"
+                      : "Nationality Number"
+                  }
                   logo={"id"}
                   onChangeText={(val) => setNationalityId(val)}
                   value={nationalityId}
@@ -773,11 +727,11 @@ export default function SignUpScreen({ navigation }) {
                   maxLength={10}
                 />
                 <Input
-                  placeHolder={" رقم الهوية"}
+                  placeHolder={
+                    langCtx.language === "ar" ? "رقم الهوية" : "Identity Number"
+                  }
                   logo={"id"}
-                  onChangeText={(val) => {
-                    setIdentityNumber(val);
-                  }}
+                  onChangeText={(val) => setIdentityNumber(val)}
                   value={identityNumber}
                   borderColorRed={validation.identityNumber === false}
                   maxLength={8}
@@ -787,57 +741,82 @@ export default function SignUpScreen({ navigation }) {
             {selectedId === "2" && (
               <>
                 <Input
-                  placeHolder={" الرقم المتسلسل "}
+                  placeHolder={
+                    langCtx.language === "ar"
+                      ? "الرقم المتسلسل"
+                      : "Serial Number"
+                  }
                   logo={"id"}
                   onChangeText={(val) => setSerialNumberJordanSn(val)}
                   value={serialNumberJordanSn}
                   borderColorRed={validation.serialNumberJordanSn === false}
                   maxLength={10}
+                  keyboardType="numeric"
                 />
                 <Input
-                  placeHolder={" رقم الوثيقة"}
+                  placeHolder={
+                    langCtx.language === "ar"
+                      ? "رقم الوثيقة"
+                      : "Document Number"
+                  }
                   logo={"id"}
                   onChangeText={(val) => setDocumentNumberJordanSn(val)}
                   value={documentNumberJordanSn}
                   borderColorRed={validation.documentNumberJordanSn === false}
                   maxLength={8}
+                  keyboardType="numeric"
                 />
               </>
             )}
             {selectedId === "3" && (
               <>
                 <Input
-                  placeHolder={" رقم الملف"}
+                  placeHolder={
+                    langCtx.language === "ar" ? "رقم الملف" : "File Number"
+                  }
                   logo={"id"}
                   onChangeText={(val) => setFileNumberGaza(val)}
                   value={fileNumberGaza}
                   borderColorRed={validation.fileNumberGaza === false}
                   maxLength={10}
+                  keyboardType="numeric"
                 />
 
                 <Input
-                  placeHolder={"رقم الوثيقة"}
+                  placeHolder={
+                    langCtx.language === "ar"
+                      ? "رقم الوثيقة"
+                      : "Document Number"
+                  }
                   logo={"id"}
                   onChangeText={(val) => setDocumentNumberGaza(val)}
                   value={documentNumberGaza}
                   borderColorRed={validation.documentNumberGaza === false}
                   maxLength={8}
+                  keyboardType="numeric"
                 />
               </>
             )}
             {selectedId === "4" && (
               <>
                 <Input
-                  placeHolder={"  الرقم الشخصي"}
+                  placeHolder={
+                    langCtx.language === "ar"
+                      ? "الرقم الشخصي"
+                      : "Personal Number"
+                  }
                   logo={"id"}
                   onChangeText={(val) => setPersonalNumber(val)}
                   value={personalNumber}
                   borderColorRed={validation.personalNumber === false}
                   maxLength={10}
+                  keyboardType="numeric"
                 />
 
                 <Input
-                  placeHolder={"سنة الميلاد"}
+                  placeHolder={
+                    langCtx.language === "ar" ? "سنة الميلاد" : "Birth Year"
+                  }
                   logo={"calendar-outline"}
                   onChangeText={(val) => setBirthYear(val)}
                   value={birthYear}
@@ -848,7 +827,9 @@ export default function SignUpScreen({ navigation }) {
               </>
             )}
             <Input
-              placeHolder={"رقم الهاتف"}
+              placeHolder={
+                langCtx.language === "ar" ? "رقم الهاتف" : "Phone Number"
+              }
               logo={"call"}
               onChangeText={(val) => setPhoneNumber(val)}
               value={phoneNumber}
@@ -857,8 +838,9 @@ export default function SignUpScreen({ navigation }) {
               maxLength={10}
             />
             <Input
-              placeHolder={"كلمة المرور"}
-              logo={"lock-closed"}
+              placeHolder={
+                langCtx.language === "ar" ? "كلمة المرور" : "Password"
+              }
               secureTextEntry={true}
               onChangeText={(val) => setPassword(val)}
               value={password}
@@ -866,8 +848,11 @@ export default function SignUpScreen({ navigation }) {
               maxLength={20}
             />
             <Input
-              placeHolder={"تأكيد كلمة المرور"}
-              logo={"lock-closed"}
+              placeHolder={
+                langCtx.language === "ar"
+                  ? "تأكيد كلمة المرور"
+                  : "Confirm Password"
+              }
               secureTextEntry={true}
               onChangeText={(val) => setConfirmPassword(val)}
               value={confirmPassword}
@@ -881,14 +866,13 @@ export default function SignUpScreen({ navigation }) {
               onSubmit();
             }}
           >
-            التسجيل
+            {langCtx.language === "ar" ? "التسجيل" : "Register"}
           </Button>
         </ScrollView>
       )}
     </>
   );
 }
-
 const styles = StyleSheet.create({
   screen: { flex: 1 },
 
@@ -905,7 +889,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     position: "absolute",
     top: 140,
-    left: 40,
   },
   tab: {
     borderBottomWidth: 5,
@@ -913,27 +896,43 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 20,
     marginHorizontal: 5,
+    width: width / 2.25,
   },
   textTab: {
     fontSize: 20,
     fontWeight: "bold",
+    marginBottom: 10,
   },
   radioGroup: {
-    marginVertical: 10,
-    paddingHorizontal: 20,
-
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    padding: 10,
     borderRadius: 10,
-    paddingVertical: 10,
+    marginVertical: 10,
+
+    backgroundColor: "#C5D6BC",
   },
   radioContainer: {
-    flexDirection: "column", // Arrange radio button and label in a column
-    alignItems: "center", // Center the items
-    marginHorizontal: 10,
+    width: "42%",
+    alignItems: "center",
+    marginVertical: 5,
+    padding: 10,
+    borderRadius: 8,
   },
   radioLabel: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#333",
-    marginTop: 5, // Space between radio button and label
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+  // Green accent for selected radio button
+  selectedContainer: {
+    borderColor: "#008000", // Green border
+    backgroundColor: "#F0FFF0", // Light green background
+  },
+  selectedLabel: {
+    color: "#008000", // Green text
   },
   title: {
     fontSize: 20,
@@ -960,88 +959,3 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
 });
-
-const handleServerResponse = (status, data) => {
-  if (status === 200) {
-    console.log("Registration successful:", data);
-    navigation.navigate("SuccessRegistrationScreen");
-  } else if (status === 500) {
-    Alert.alert(
-      "System Error",
-      "Sorry, the system is down. Please try again later."
-    );
-  } else {
-    const message = data.detail
-      ? `Details: ${data.detail}`
-      : `Status: ${status}`;
-    Alert.alert("Registration Failed", message);
-  }
-};
-const setFieldErrors = (errors) => {
-  setErrorMessage({
-    firstName: errors.FirstName ? errors.FirstName[0] : null,
-    secondName: errors.SecondName ? errors.SecondName[0] : null,
-    thirdName: errors.ThirdName ? errors.ThirdName[0] : null,
-    lastName: errors.LastName ? errors.LastName[0] : null,
-    email: errors.Email ? errors.Email[0] : null,
-    password: errors.Password ? errors.Password[0] : null,
-    phoneNumber: errors.PhoneNumber ? errors.PhoneNumber[0] : null,
-    identityNumber: errors.IdentityNumber ? errors.IdentityNumber[0] : null,
-    nationalityId: errors.NationalityNumber
-      ? errors.NationalityNumber[0]
-      : null,
-    civilRegistrationNumber: errors.CivilRegistrationNumber
-      ? errors.CivilRegistrationNumber[0]
-      : null,
-  });
-};
-const registerJordanianUser = async () => {
-  try {
-    const response = await RegisterJordanian({
-      firstName,
-      secondName,
-      thirdName,
-      LastName,
-      phoneNumber,
-      email,
-      password,
-      nationalityNumber: nationalityId,
-      verificationMechanism: "IdentityNumber",
-      identityNumber,
-      City: selectedCity,
-      civilRegistrationNumber: null,
-    });
-
-    handleServerResponse(response.status, response.data);
-  } catch (error) {
-    if (error.response) {
-      const { status, data } = error.response;
-
-      // Handle 400 validation errors
-      if (status === 400 && data.errors) {
-        setFieldErrors(data.errors);
-        console.log("Validation errors:", data.errors);
-        Alert.alert(
-          "Validation Error",
-          "Please check the highlighted fields and try again."
-        );
-      }
-      // Handle general errors (non-field specific)
-      else if (status === 400 && data.detail) {
-        setErrorMessage({ general: data.detail });
-        Alert.alert("Registration Error", data.detail);
-      }
-      // Handle other error statuses
-      else {
-        console.log("Unexpected error:", error.response);
-        Alert.alert("Error", `An error occurred: ${status}. Please try again.`);
-      }
-    } else {
-      console.log("Network or server error:", error);
-      Alert.alert(
-        "Connection Error",
-        "Could not connect to the server. Please check your internet connection."
-      );
-    }
-  }
-};

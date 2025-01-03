@@ -1,82 +1,155 @@
-import { View, Text, StyleSheet, ScrollView } from "react-native";
-import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+} from "react-native";
+import React, { useState, useContext, useCallback } from "react";
 import HeaderImage from "../components/UI/HeaderImage";
 import LoadingIndicator from "../components/UI/LoadingIndicator";
-import { useContext } from "react";
-import AuthContextProvider, { AuthContext } from "../store/TokenContext.jsx";
+import { AuthContext } from "../store/TokenContext.jsx";
 import { FetchComplaintsStatus } from "../utl/apis.js";
+import { useFocusEffect } from "@react-navigation/native";
+import { LanguageContext } from "../store/languageContext.jsx";
 
-const tracksReports = [];
+const { width, height } = Dimensions.get("window");
 
-export default function TrackingScreen() {
+export default function TrackingScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
+  const langCtx = useContext(LanguageContext);
   const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    const fetchComplaintsStatus = async () => {
-      try {
-        setLoading(true);
-        FetchComplaintsStatus(authCtx.token).then((response) => {
-          console.log(response);
-        });
-      } catch (error) {
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchComplaintsStatus();
-  }, [authCtx.token]);
+  const [complaints, setComplaints] = useState([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchComplaintsStatus = async () => {
+        try {
+          const userId = authCtx.userData.id;
+          setLoading(true);
+
+          const response = await FetchComplaintsStatus(authCtx.token, userId);
+          console.log("data:", response.status);
+
+          if (response.status !== 403 || response.status !== 500)
+            setComplaints(response);
+          if (response.status == 403) {
+            setComplaints([]);
+          }
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchComplaintsStatus();
+    }, [authCtx.token, authCtx.userData.id])
+  );
+
+  const handleEdit = (reportData) => {
+    navigation.navigate("UpdateComplaintsScreen", { reportData });
+  };
+
   return (
     <>
       {loading && <LoadingIndicator />}
-
       {!loading && (
         <View style={styles.screen}>
           <HeaderImage />
-          {tracksReports.length === 0 ? (
+          {complaints.length === 0 ? (
             <View style={styles.containerNot}>
-              <Text style={styles.textNot}>لا يوجد لديك شكاوي </Text>
+              <Text style={styles.textNot}>
+                {langCtx.language === "ar"
+                  ? "لا يوجد لديك شكاوي"
+                  : "No Complaints Yet"}
+              </Text>
             </View>
           ) : (
-            <ScrollView>
-              {tracksReports.map((report) => (
+            <ScrollView contentContainerStyle={styles.scrollViewContent}>
+              {complaints.map((report) => (
                 <View key={report.id} style={styles.report}>
                   <Text style={styles.reportTitle}>
-                    <Text style={{ fontSize: 20 }}>رقم الشكوى: </Text>
+                    <Text style={styles.complaintLabel}>
+                      {langCtx.language === "ar"
+                        ? "رقم الشكوى"
+                        : "Complaint Number"}
+                      :
+                    </Text>{" "}
                     {report.id}
                   </Text>
                   <Text style={styles.text}>
-                    <Text style={styles.bold}>نوع الشكوى: </Text>
-                    {report.title}
-                  </Text>
-                  <Text style={styles.text}>
-                    <Text style={styles.bold}>التاريخ: </Text>
-                    {report.date}
-                  </Text>
-                  <Text style={styles.text}>
-                    <Text style={styles.bold}>الحالة: </Text>
-                    <Text
-                      style={[
-                        {
-                          color:
-                            report.status === "مكتمل"
-                              ? "green"
-                              : report.status === "مرفوض"
-                              ? "red"
-                              : report.status === "انتظار"
-                              ? "#FFC107"
-                              : "black", // default color if no match
-                          fontSize: 15,
-                          fontWeight: "bold",
-                        },
-                      ]}
-                    >
-                      {report.status}
+                    <Text style={styles.bold}>
+                      {langCtx.language === "ar"
+                        ? "نوع الشكوى"
+                        : "Complaint Type"}
+                      :
+                    </Text>{" "}
+                    <Text>
+                      {langCtx.language === "ar"
+                        ? report.subject.arabicName
+                        : report.subject.name}
                     </Text>
                   </Text>
                   <Text style={styles.text}>
-                    <Text style={styles.bold}>الملاحظات: </Text>
-                    {report.comp}
+                    <Text style={styles.bold}>
+                      {langCtx.language === "ar" ? "التاريخ" : "Date"}:
+                    </Text>{" "}
+                    {report.date}
                   </Text>
+                  <Text style={styles.text}>
+                    <Text style={styles.bold}>
+                      {langCtx.language === "ar" ? "الحالة" : "Status"}:
+                    </Text>{" "}
+                    <Text
+                      style={[
+                        styles.statusText,
+                        {
+                          color:
+                            report.status === "Rejected"
+                              ? "red"
+                              : report.status === "Registered"
+                              ? "green"
+                              : report.status === "Processing"
+                              ? "#FFC107"
+                              : report.status === "Closed"
+                              ? "black"
+                              : "black",
+                        },
+                      ]}
+                    >
+                      {langCtx.language === "ar"
+                        ? report.status === "Rejected"
+                          ? "مرفوض"
+                          : report.status === "Registered"
+                          ? "مسجل"
+                          : report.status === "Processing"
+                          ? "تحت المعالجة"
+                          : report.status === "Closed"
+                          ? "مغلق"
+                          : "غير معروف"
+                        : report.status}
+                    </Text>
+                  </Text>
+
+                  {report.isNotesDisplayedToUser && (
+                    <Text style={styles.text}>
+                      <Text style={styles.bold}>
+                        {langCtx.language === "ar" ? "ملاحظات" : "notes"}:
+                      </Text>{" "}
+                      {report.notes}
+                    </Text>
+                  )}
+                  {report.status === "Registered" && (
+                    <TouchableOpacity
+                      style={styles.editButton}
+                      onPress={() => handleEdit(report)}
+                    >
+                      <Text style={styles.editButtonText}>
+                        {langCtx.language === "ar" ? "تعديل" : "Edit"}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               ))}
             </ScrollView>
@@ -94,17 +167,18 @@ const styles = StyleSheet.create({
   },
   containerNot: {
     alignItems: "center",
-    marginVertical: 30,
+    marginVertical: height * 0.03,
   },
   textNot: {
-    fontSize: 20,
+    fontSize: width * 0.05,
     color: "#000000",
+    textAlign: "center", // Center the text
   },
   report: {
-    marginVertical: 10,
+    marginVertical: height * 0.01,
     backgroundColor: "#fff",
-    marginHorizontal: 20,
-    padding: 15,
+    marginHorizontal: width * 0.05,
+    padding: width * 0.05,
     borderRadius: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -114,16 +188,40 @@ const styles = StyleSheet.create({
   },
   reportTitle: {
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: width * 0.045,
     marginBottom: 5,
   },
+  complaintLabel: {
+    fontSize: width * 0.045,
+    color: "#333", // Changed color for better visibility
+  },
   text: {
-    fontSize: 14,
+    fontSize: width * 0.04,
     color: "#333",
     marginBottom: 5,
   },
   bold: {
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: width * 0.045,
+  },
+  statusText: {
+    fontSize: width * 0.04,
+    fontWeight: "bold",
+  },
+  editButton: {
+    marginTop: 10,
+    paddingVertical: height * 0.015,
+    paddingHorizontal: width * 0.1,
+    backgroundColor: "#4CAF50",
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  editButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: width * 0.032,
+  },
+  scrollViewContent: {
+    paddingBottom: height * 0.1, // Add some padding at the bottom
   },
 });
