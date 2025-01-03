@@ -51,6 +51,7 @@ export default function ChangePasswordScreen({ navigation }) {
       ChangePassword(
         { newPassword, oldPassword, email: authCtx.userData.email },
         authCtx.token
+      
       )
         .then((response) => {
           if (response.status === 204) {

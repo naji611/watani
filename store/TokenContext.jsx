@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import CustomAlert from "../components/UI/CustomAlert";
+import * as SecureStore from "expo-secure-store"; // Import expo-secure-store
 import { LanguageContext } from "./languageContext";
+import CustomAlert from "../components/UI/CustomAlert";
+
 const jordanCitiesEN = [
   { id: 1, name: "Amman" },
   { id: 2, name: "Irbid" },
@@ -61,8 +62,8 @@ export default function AuthContextProvider({ children }) {
 
   useEffect(() => {
     const loadUserData = async () => {
-      const storedToken = await AsyncStorage.getItem("token");
-      const storedUserData = await AsyncStorage.getItem("userData");
+      const storedToken = await SecureStore.getItemAsync("token");
+      const storedUserData = await SecureStore.getItemAsync("userData");
 
       if (storedToken && storedUserData) {
         const parsedUserData = JSON.parse(storedUserData);
@@ -108,8 +109,8 @@ export default function AuthContextProvider({ children }) {
 
     setUser(updatedUserData);
     console.log(updatedUserData); // Log the updated data
-    AsyncStorage.setItem("token", token);
-    AsyncStorage.setItem("userData", JSON.stringify(updatedUserData)); // Save the updated data
+    SecureStore.setItemAsync("token", token);
+    SecureStore.setItemAsync("userData", JSON.stringify(updatedUserData)); // Save the updated data
 
     // Check for token expiration upon authentication
     if (userData.expiration) {
@@ -142,8 +143,8 @@ export default function AuthContextProvider({ children }) {
       isEmailConfirmed: "",
       governorateId: "",
     });
-    AsyncStorage.removeItem("token");
-    AsyncStorage.removeItem("userData");
+    SecureStore.deleteItemAsync("token");
+    SecureStore.deleteItemAsync("userData");
     setShowAlert(false); // Reset alert when logging out
   }
 

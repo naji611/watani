@@ -13,6 +13,7 @@ import Button from "../components/UI/Button";
 import RegisterImage from "../components/UI/RegisterImage";
 import RadioGroup from "react-native-radio-buttons-group";
 import { Picker } from "@react-native-picker/picker";
+import RNPickerSelect from "react-native-picker-select";
 import {
   RegisterJordanian,
   RegisterJordanianWomenChild,
@@ -119,7 +120,7 @@ export default function SignUpScreen({ navigation }) {
     personalNumber: null,
     birthYear: null,
   });
-
+  const cityList = langCtx.language === "en" ? jordanCitiesEN : jordanCitiesAR;
   function validInputs() {
     let updatedValidation = { ...validation };
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -402,7 +403,7 @@ export default function SignUpScreen({ navigation }) {
 
     if (response.status === 500) {
       setAlertMessage(
-        isEnglish ? "Sorry, the system is down." : "عذرًا، النظام معطل."
+        isEnglish ? "Sorry, the system is down." : "500عذرًا، النظام معطل."
       );
       setAlertError(true);
       setAlertVisible(true);
@@ -688,24 +689,18 @@ export default function SignUpScreen({ navigation }) {
               />
             </View>
             <View style={styles.pickerWrapper}>
-              <Picker
-                selectedValue={selectedCity}
-                onValueChange={(itemValue) => setSelectedCity(itemValue)}
-                style={styles.picker}
-                itemStyle={styles.pickerItem} // Bold text applied here
-                mode={"dropdown"}
-              >
-                {(langCtx.language === "en"
-                  ? jordanCitiesEN
-                  : jordanCitiesAR
-                ).map((city) => (
-                  <Picker.Item
-                    key={city.id}
-                    label={city.name}
-                    value={city.id}
-                  />
-                ))}
-              </Picker>
+              <RNPickerSelect
+                onValueChange={(value) => setSelectedCity(value)}
+                items={cityList.map((city) => ({
+                  label: city.name,
+                  value: city.id,
+                }))}
+                value={selectedCity}
+                style={{
+                  inputAndroid: styles.picker,
+                  inputIOS: styles.picker,
+                }}
+              />
             </View>
             <Input
               placeHolder={

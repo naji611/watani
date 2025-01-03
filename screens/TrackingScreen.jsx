@@ -118,9 +118,20 @@ export default function TrackingScreen({ navigation }) {
                         },
                       ]}
                     >
-                      {report.status}
+                      {langCtx.language === "ar"
+                        ? report.status === "Rejected"
+                          ? "مرفوض"
+                          : report.status === "Registered"
+                          ? "مسجل"
+                          : report.status === "Processing"
+                          ? "تحت المعالجة"
+                          : report.status === "Closed"
+                          ? "مغلق"
+                          : "غير معروف"
+                        : report.status}
                     </Text>
                   </Text>
+
                   {report.isNotesDisplayedToUser && (
                     <Text style={styles.text}>
                       <Text style={styles.bold}>

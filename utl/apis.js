@@ -1,28 +1,29 @@
 import axios from "axios";
 const complaintsUrl = (id) =>
-  `http://watani.runasp.net/api/v1/Complaints/category/${id}/subjects`;
-const baseUrl = "http://watani.runasp.net/api/v1/Authentication/register/users";
-const feedbackUrl = "http://watani.runasp.net/api/v1/Feedbacks";
+  `https://watani.runasp.net/api/v1/Complaints/category/${id}/subjects`;
+const baseUrl =
+  "https://watani.runasp.net/api/v1/Authentication/register/users";
+const feedbackUrl = "https://watani.runasp.net/api/v1/Feedbacks";
 const jordanianUrl = `${baseUrl}/jordanian`;
 const jordanianWomenChildUrl = `${baseUrl}/jordanian-women-child`;
 const gazaSonsUrl = `${baseUrl}/gaza-son`;
 const foreignUrl = `${baseUrl}/foreign`;
 const loginUrl = (username, password) =>
-  `http://watani.runasp.net/api/v1/Authentication/login?username=${username}&password=${password}`;
-const takeComplainUrl = "http://watani.runasp.net/api/v1/Complaints";
+  `https://watani.runasp.net/api/v1/Authentication/login?username=${username}&password=${password}`;
+const takeComplainUrl = "https://watani.runasp.net/api/v1/Complaints";
 
 const changePassUrl =
-  "http://watani.runasp.net/api/v1/Authentication/change-password";
+  "https://watani.runasp.net/api/v1/Authentication/change-password";
 
-const fetchComplaintsStatusUrl = "http://watani.runasp.net/api/v1/Complaints";
+const fetchComplaintsStatusUrl = "https://watani.runasp.net/api/v1/Complaints";
 
 const forgetPasswordUrl =
-  "http://watani.runasp.net/api/v1/Authentication/reset-password-token";
+  "https://watani.runasp.net/api/v1/Authentication/reset-password-token";
 
 const fetchMunicipalities = (id) =>
-  `http://watani.runasp.net/api/v1/Municipalities?governorateId=${id}`;
+  `https://watani.runasp.net/api/v1/Municipalities?governorateId=${id}`;
 const UpdateComplaintsUrl = (id) =>
-  `http://watani.runasp.net/api/v1/Complaints/${id}`;
+  `https://watani.runasp.net/api/v1/Complaints/${id}`;
 // General function to handle API calls with error handling
 async function apiPostRequest(url, data, options = {}) {
   try {

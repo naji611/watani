@@ -40,7 +40,7 @@ export default function ForgetPasswordScreen({ navigation }) {
       setIsLoading(true);
       ForgetPassword(email)
         .then((response) => {
-          console.log(response.status);
+          console.log(response);
           if (!response.status) {
             navigation.navigate("verifyEmailFromEmail");
           } else if (response.status === 404) {
@@ -49,6 +49,14 @@ export default function ForgetPasswordScreen({ navigation }) {
               langCtx.language === "en"
                 ? "Email not found, try another email!"
                 : "البريد الإلكتروني غير موجود، جرب بريدًا آخر!"
+            );
+            setAlertError(true);
+          } else if (response.status === 500) {
+            setAlertVisible(true);
+            setAlertMessage(
+              langCtx.language === "en"
+                ? "System is down, try again later!"
+                : "النظام معطل!"
             );
             setAlertError(true);
           } else {

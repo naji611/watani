@@ -1,23 +1,26 @@
 import { StatusBar } from "expo-status-bar";
 import RegisterNavigation from "./navigation/RegisterNavigation";
 import { HomeStackNavigator } from "./navigation/RegisterNavigation";
-import { GestureHandlerRootView } from "react-native-gesture-handler"; // GestureHandler required
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import AuthContextProvider from "./store/TokenContext.jsx";
 import LanguageContextProvider from "./store/languageContext.jsx";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "./store/TokenContext";
 import LoadingIndicator from "./components/UI/LoadingIndicator.jsx";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function App() {
   return (
-    <LanguageContextProvider>
-      <AuthContextProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <MainNavigator />
-        </GestureHandlerRootView>
-      </AuthContextProvider>
-    </LanguageContextProvider>
+    <SafeAreaProvider>
+      <LanguageContextProvider>
+        <AuthContextProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <MainNavigator />
+          </GestureHandlerRootView>
+        </AuthContextProvider>
+      </LanguageContextProvider>
+    </SafeAreaProvider>
   );
 }
 
@@ -26,24 +29,33 @@ function MainNavigator() {
   const authCtx = useContext(AuthContext);
 
   useEffect(() => {
-    async function fetchToken() {
+    const fetchToken = async () => {
       try {
-        const storedToken = await AsyncStorage.getItem("token");
-        const storedUserData = await AsyncStorage.getItem("userData");
+        // Fetch token and user data from SecureStore
+        const [storedToken, storedUserData] = await Promise.all([
+          SecureStore.getItemAsync("token"), // Using expo-secure-store
+          SecureStore.getItemAsync("userData"), // Using expo-secure-store
+        ]);
 
+        // Parse and authenticate if both are available
         if (storedToken && storedUserData) {
-          const parsedUserData = JSON.parse(storedUserData);
-          authCtx.authenticate(storedToken, parsedUserData);
+          try {
+            const parsedUserData = JSON.parse(storedUserData);
+            authCtx.authenticate(storedToken, parsedUserData);
+          } catch (parseError) {
+            console.error("Error parsing user data:", parseError);
+          }
         }
       } catch (error) {
         console.error("Error fetching token or user data:", error);
+        alert("An error occurred while loading data. Please try again.");
       } finally {
-        setIsLoading(false); // Ensure loading ends even if an error occurs
+        setIsLoading(false); // Always stop loading
       }
-    }
+    };
 
     fetchToken();
-  }, []);
+  }, []); // Empty dependency array to only run this effect once on mount
 
   if (isLoading) {
     return <LoadingIndicator />;

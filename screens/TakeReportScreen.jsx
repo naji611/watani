@@ -215,6 +215,7 @@ export default function TakeReportScreen({ route, navigation }) {
   }
 
   const onPickedLocationHandler = useCallback(({ lng, lat, address }) => {
+    //   console.log(lat, "address");
     const cityArray = address.split(",");
     setSelectedLocation({ lat, lng, city: cityArray });
     setCity(cityArray);

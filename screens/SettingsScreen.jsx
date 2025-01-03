@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginRight: 10,
     justifyContent: "center",
-    backgroundColor: "#f55",
+    backgroundColor: "#90B8B0",
   },
   languageButtonText: {
     textAlign: "center",

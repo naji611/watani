@@ -45,8 +45,8 @@ export default function UpdateComplaintsScreen({ route, navigation }) {
     navigation.setOptions({
       title:
         langCtx.language === "ar"
-          ? "تعديل " + reportData.subject.arabicName
-          : "Update " + reportData.subject.name,
+          ? reportData.subject.arabicName
+          : reportData.subject.name,
     });
   }, [navigation]);
 

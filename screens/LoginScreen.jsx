@@ -34,7 +34,6 @@ export default function LoginScreen({ navigation }) {
   });
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
-
   function handleLogin() {
     validateInputs();
 
@@ -42,6 +41,7 @@ export default function LoginScreen({ navigation }) {
       setIsLoading(true);
       Login(userName, password)
         .then((response) => {
+          console.log(response);
           if (response.status === 200) {
             console.log("Login successful:", response.data);
             // Decode the token to get user data
@@ -61,37 +61,70 @@ export default function LoginScreen({ navigation }) {
             };
             // Authenticate user and store data
             authCtx.authenticate(response.data.token, userData);
+          } else if (response.status === 500) {
+            setAlertMessage(
+              langCtx.language === "en"
+                ? "Sorry, the system is down."
+                : " عذرًا، النظام معطل."
+            );
+            setAlertVisible(true);
+            console.log("response:::", response);
           } else {
+            // Handle other cases, for example, invalid user or password
+            console.log("response:::else ", response);
             if (response.data.detail === "Can not find the specified user") {
-              if (langCtx.language === "ar") {
-                setAlertMessage("لا يوجد مستخدم مسجل بهذا الرقم!");
-                setAlertVisible(true);
-              } else {
-                setAlertMessage("User not found!");
-                setAlertVisible(true);
-              }
+              setAlertMessage(
+                langCtx.language === "ar"
+                  ? "لا يوجد مستخدم مسجل بهذا الرقم!"
+                  : "User not found!"
+              );
+              setAlertVisible(true);
             } else if (
               response.data.detail === "Invalid username or password"
             ) {
-              if (langCtx.language === "ar") {
-                setAlertMessage(" الرقم السري او اسم المستخدم خطأ!");
-                setAlertVisible(true);
-              } else {
-                setAlertMessage(response.data.detail);
-                setAlertVisible(true);
-              }
+              setAlertMessage(
+                langCtx.language === "ar"
+                  ? " الرقم السري او اسم المستخدم خطأ!"
+                  : "Invalid username or password!"
+              );
+              setAlertVisible(true);
+            } else {
+              setAlertMessage(
+                langCtx.language === "ar"
+                  ? "خطأ غير معروف، يرجى المحاولة لاحقًا."
+                  : "Unknown error, please try again later."
+              );
+              setAlertVisible(true);
             }
-            console.log("Login failed:", response.data);
+            console.log("Login failed:", response.status);
           }
         })
         .catch((error) => {
           console.error("Error during login:", error);
-          if (langCtx.language === "ar") {
-            setAlertMessage("يرجى المحاولة لاحقا");
+
+          // Handle different error scenarios based on the type of error
+          if (error.response) {
+            // Server responded with an error status code
+            setAlertMessage(
+              langCtx.language === "ar"
+                ? "حدث خطأ في الخادم، يرجى المحاولة لاحقًا."
+                : "Server error, please try again later."
+            );
+            setAlertVisible(true);
+          } else if (error.request) {
+            // No response from server, network issue
+            setAlertMessage(
+              langCtx.language === "ar"
+                ? "لم يتمكن من الاتصال بالخادم، يرجى التحقق من اتصال الإنترنت."
+                : "Could not connect to the server, please check your internet connection."
+            );
             setAlertVisible(true);
           } else {
+            // Something else went wrong (e.g., request configuration)
             setAlertMessage(
-              "An error occurred during login. Please try again."
+              langCtx.language === "ar"
+                ? "حدث خطأ غير متوقع. يرجى المحاولة لاحقًا."
+                : "An unexpected error occurred. Please try again later."
             );
             setAlertVisible(true);
           }
@@ -100,13 +133,12 @@ export default function LoginScreen({ navigation }) {
           setIsLoading(false); // Ensure loading state is reset
         });
     } else {
-      if (langCtx.language === "ar") {
-        setAlertMessage("  يرجى تعبئة البيانات بشكل صحيح");
-        setAlertVisible(true);
-      } else {
-        setAlertMessage("Please fill the fields correct!");
-        setAlertVisible(true);
-      }
+      setAlertMessage(
+        langCtx.language === "ar"
+          ? "يرجى تعبئة البيانات بشكل صحيح"
+          : "Please fill the fields correctly!"
+      );
+      setAlertVisible(true);
     }
   }
 
@@ -179,7 +211,9 @@ export default function LoginScreen({ navigation }) {
           <View style={styles.form}>
             <Input
               placeHolder={
-                langCtx.language === "ar" ? "اسم المستخدم " : "username"
+                langCtx.language === "ar"
+                  ? " الرقم الوطني "
+                  : "Nationality Number"
               }
               logo={"id"}
               keyboardType="numeric"

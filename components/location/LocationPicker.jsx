@@ -62,16 +62,17 @@ export default function LocationPicker({
   // Effect to load address when a location is picked
   useEffect(() => {
     async function loadLocation() {
-      console.log("call google");
+      //console.log("call google");
       if (pickedLocation) {
         try {
           const address = await getAddress(
             pickedLocation.lat,
             pickedLocation.lng
           );
+          //  console.log("address: ", address);
           onPickedLocationHandler({ ...pickedLocation, address });
         } catch (error) {
-          console.log(error);
+          console.log(error, "llll");
           setAlertMessage(
             langCtx.language === "en"
               ? "Address Error,Could not fetch the address."

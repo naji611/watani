@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store"; // Import expo-secure-store
 
 export const LanguageContext = createContext({
   language: "",
@@ -7,11 +7,11 @@ export const LanguageContext = createContext({
 });
 
 export default function LanguageContextProvider({ children }) {
-  const [language, setLanguage] = useState("ar"); // Default to English
+  const [language, setLanguage] = useState("ar"); // Default to Arabic
 
   useEffect(() => {
     const loadLanguage = async () => {
-      const storedLanguage = await AsyncStorage.getItem("language");
+      const storedLanguage = await SecureStore.getItemAsync("language"); // Use expo-secure-store instead of SecureStorage
 
       if (storedLanguage) {
         console.log("set to :", storedLanguage);
@@ -26,7 +26,7 @@ export default function LanguageContextProvider({ children }) {
     setLanguage((prevLang) => {
       const newLang = prevLang === "en" ? "ar" : "en";
       console.log("store to :", newLang);
-      AsyncStorage.setItem("language", newLang);
+      SecureStore.setItemAsync("language", newLang); // Use expo-secure-store instead of SecureStorage
       return newLang;
     });
   };
