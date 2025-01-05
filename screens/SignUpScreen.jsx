@@ -83,7 +83,7 @@ export default function SignUpScreen({ navigation }) {
   const [birthYear, setBirthYear] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [workflow, setWorkflow] = useState(1);
+
   const [validation, setValidation] = useState({
     firstName: true,
     secondName: true,
