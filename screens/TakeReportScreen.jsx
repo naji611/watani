@@ -15,6 +15,37 @@ import { FetchMunicipalities, TakeComplaint } from "../utl/apis.js";
 import LoadingIndicator from "../components/UI/LoadingIndicator";
 import CustomAlert from "../components/UI/CustomAlert.jsx";
 import { LanguageContext } from "../store/languageContext.jsx";
+import ImagePicker from "../components/ImagePicker.jsx";
+import RNPickerSelect from "react-native-picker-select";
+const jordanCitiesEN = [
+  { id: 1, name: "Amman" },
+  { id: 2, name: "Irbid" },
+  { id: 3, name: "Ajloun" },
+  { id: 4, name: "Jerash" },
+  { id: 5, name: "Mafraq" },
+  { id: 6, name: "Balqa" },
+  { id: 7, name: "Zarqa" },
+  { id: 8, name: "Madaba" },
+  { id: 9, name: "Karak" },
+  { id: 10, name: "Tafilah" },
+  { id: 11, name: "Ma'an" },
+  { id: 12, name: "Aqaba" },
+];
+
+const jordanCitiesAR = [
+  { id: 1, name: "عمان" },
+  { id: 2, name: "إربد" },
+  { id: 3, name: "عجلون" },
+  { id: 4, name: "جرش" },
+  { id: 5, name: "المفرق" },
+  { id: 6, name: "البلقاء" },
+  { id: 7, name: "الزرقاء" },
+  { id: 8, name: "مادبا" },
+  { id: 9, name: "الكرك" },
+  { id: 10, name: "الطفيلة" },
+  { id: 11, name: "معان" },
+  { id: 12, name: "العقبة" },
+];
 export default function TakeReportScreen({ route, navigation }) {
   const authCtx = useContext(AuthContext);
   const langCtx = useContext(LanguageContext);
@@ -41,8 +72,13 @@ export default function TakeReportScreen({ route, navigation }) {
     accused: true,
   });
   const [fetchedComplaints, setFetchedComplaints] = useState([]);
-  const [selectedCityId, setSelectedCityId] = useState(1);
+  const [selectedCityId, setSelectedCityId] = useState(19);
   const [selectedCity, setSelectedCity] = useState("");
+  const [selectedGovernment, setSelectedGovernment] = useState(1);
+  const [selectedGovernmentName, setSelectedGovernmentName] = useState("");
+  const [image, setImage] = useState(null);
+
+  const cityList = langCtx.language === "en" ? jordanCitiesEN : jordanCitiesAR;
   useLayoutEffect(() => {
     navigation.setOptions({
       title: type
@@ -54,11 +90,12 @@ export default function TakeReportScreen({ route, navigation }) {
   }, [navigation, title]);
 
   useEffect(() => {
-    FetchMunicipalities(authCtx.userData.governorateId)
+    FetchMunicipalities(selectedGovernment)
       .then((response) => {
         setFetchedComplaints(response.data);
-        console.log(response.data);
-        setSelectedCityId(fetchedComplaints[0].id);
+        //console.log(response.data[0].id);
+        setSelectedCityId(response.data[0].id);
+
         langCtx.language === "en"
           ? setSelectedCity(fetchedComplaints[0].name)
           : setSelectedCity(fetchedComplaints[0].arabicName);
@@ -67,7 +104,15 @@ export default function TakeReportScreen({ route, navigation }) {
       .catch((error) => {
         console.log(error);
       });
-  }, []);
+  }, [selectedGovernment]);
+  function ImageTakenHandler(imageUri) {
+    if (!imageUri) {
+      console.error("Invalid image URI");
+      return;
+    }
+    setImage(imageUri);
+    console.log("Image URI:", imageUri);
+  }
   function validateInputs() {
     let updatedValidation = { ...validation };
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -110,6 +155,9 @@ export default function TakeReportScreen({ route, navigation }) {
   }
 
   async function onSubmitHandler() {
+    console.log(selectedCity);
+    console.log(new Date());
+
     validateInputs();
 
     // Validate if selectedLocation exists
@@ -126,7 +174,8 @@ export default function TakeReportScreen({ route, navigation }) {
     }
 
     // Validate if city is in Jordan
-    if (city[2] !== " Jordan") {
+    if (!city.includes(" Jordan")) {
+      console.log(city);
       setAlertMessage(
         langCtx.language === "en"
           ? "Pleas pick a location in Jordan."
@@ -155,10 +204,11 @@ export default function TakeReportScreen({ route, navigation }) {
     }
 
     // Prepare complaint data
+    const formattedDate = new Date().toISOString().split("T")[0];
     const complaintData = {
       PhoneNumber: phoneNumber,
       Email: email,
-      Date: "2024-10-14",
+      Date: formattedDate,
       NearestLocation: nearestLocation,
       BuildingNumber: buildingNumber,
       Visibility: "Visible",
@@ -256,6 +306,26 @@ export default function TakeReportScreen({ route, navigation }) {
               hasLabel={true}
               val={email}
             />
+            <View style={styles.governmentWrapper}>
+              <Text style={styles.governmentLabel}>
+                {langCtx.language === "en" ? "Government" : "المحافظة"}
+              </Text>
+              <RNPickerSelect
+                onValueChange={(value) => setSelectedGovernment(value)}
+                items={cityList.map((city) => ({
+                  label: city.name,
+                  value: city.id,
+                }))}
+                value={selectedGovernment}
+                style={{
+                  inputAndroid: styles.governmentPicker,
+                  inputIOS: styles.governmentPicker,
+
+                  modalViewTop: styles.dropdownBorder, // Applies the border to the dropdown
+                }}
+              />
+            </View>
+
             <View style={styles.pickerWrapper}>
               <Text style={styles.labelText}>
                 {langCtx.language === "en" ? "Municipality" : "البلدية"}
@@ -308,7 +378,6 @@ export default function TakeReportScreen({ route, navigation }) {
               val={buildingNumber}
               keyboardType="numeric"
             />
-
             <Input
               placeHolder={
                 langCtx.language === "ar"
@@ -325,6 +394,9 @@ export default function TakeReportScreen({ route, navigation }) {
               val={complaintDetails}
             />
           </View>
+          {/* <View style={styles.location}>
+            <ImagePicker onImageTaken={ImageTakenHandler} />
+          </View> */}
           <View style={styles.location}>
             <LocationPicker
               lat={lat}
@@ -372,14 +444,14 @@ const styles = StyleSheet.create({
 
   pickerWrapper: {
     marginVertical: 10,
-    alignItems: "center",
+    alignItems: "center", // Centers content horizontally
   },
   labelText: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#333",
-    marginBottom: 20, // Adds space between label and picker
-    textAlign: "left", // Aligns text to the left
+    marginBottom: 20,
+    textAlign: "center", // Centers text horizontally
   },
   picker: {
     width: 200,
@@ -389,13 +461,45 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 8,
     backgroundColor: "#f9f9f9",
+    textAlign: "center", // Centers text inside the picker
     marginBottom: 20,
   },
+
   pickerItem: {
     height: 50,
     color: "black",
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
+  },
+  governmentWrapper: {
+    marginVertical: 10,
+    alignItems: "center", // Centers the picker horizontally
+    marginLeft: 70,
+  },
+  governmentLabel: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 20,
+    textAlign: "center", // Centers the label text
+    marginRight: 60,
+  },
+  governmentPicker: {
+    width: 200,
+    height: 45,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    backgroundColor: "#f9f9f9",
+    marginBottom: 20,
+  },
+  dropdownBorder: {
+    borderWidth: 2, // Thickness of the border
+    borderColor: "#007bff", // Border color (blue)
+    borderRadius: 8, // Rounded corners
+    backgroundColor: "#fff", // Dropdown background color
+    padding: 10,
   },
 });

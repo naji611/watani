@@ -20,7 +20,7 @@ export default function TrackingScreen({ navigation }) {
   const authCtx = useContext(AuthContext);
   const langCtx = useContext(LanguageContext);
   const [loading, setLoading] = useState(true);
-  const [complaints, setComplaints] = useState([]);
+  const [complaints, setComplaints] = useState(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -30,15 +30,21 @@ export default function TrackingScreen({ navigation }) {
           setLoading(true);
 
           const response = await FetchComplaintsStatus(authCtx.token, userId);
-          console.log("data:", response.status);
+          console.log("data:", response);
 
-          if (response.status !== 403 || response.status !== 500)
-            setComplaints(response);
-          if (response.status == 403) {
-            setComplaints([]);
+          if (response && !response.status) {
+            // Only update complaints if the response status is 200
+            setComplaints(response || []);
+            console.log(response);
+          } else {
+            // Handle non-200 status (errors)
+            setComplaints(null);
+            // Optionally, handle error display here
           }
         } catch (error) {
-          console.error(error);
+          console.error("Error fetching complaints:", error);
+          setComplaints(null);
+          // You can display an error message to the user here
         } finally {
           setLoading(false);
         }
@@ -57,7 +63,7 @@ export default function TrackingScreen({ navigation }) {
       {!loading && (
         <View style={styles.screen}>
           <HeaderImage />
-          {complaints.length === 0 ? (
+          {!complaints ? (
             <View style={styles.containerNot}>
               <Text style={styles.textNot}>
                 {langCtx.language === "ar"
@@ -132,7 +138,7 @@ export default function TrackingScreen({ navigation }) {
                     </Text>
                   </Text>
 
-                  {report.isNotesDisplayedToUser && (
+                  {report.notes && (
                     <Text style={styles.text}>
                       <Text style={styles.bold}>
                         {langCtx.language === "ar" ? "ملاحظات" : "notes"}:
