@@ -71,9 +71,9 @@ export default function AuthContextProvider({ children }) {
         setToken(storedToken);
         setUser(parsedUserData);
         if (parsedUserData.expiration) {
-          const expirationDate = Number(parsedUserData.expiration) * 1000; // Convert to milliseconds
+          const expirationDate = Number(parsedUserData.expiration) * 1000;
           const currentTime = Date.now();
-          const timeout = expirationDate - currentTime; // Time until expiration
+          const timeout = expirationDate - currentTime;
 
           if (timeout > 0) {
             const alertTimeout = setTimeout(() => {
