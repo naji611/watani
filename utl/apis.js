@@ -24,7 +24,7 @@ const fetchMunicipalities = (id) =>
   `https://watani.runasp.net/api/v1/Municipalities?governorateId=${id}`;
 const UpdateComplaintsUrl = (id) =>
   `https://watani.runasp.net/api/v1/Complaints/${id}`;
-// General function to handle API calls with error handling
+
 async function apiPostRequest(url, data, options = {}) {
   try {
     const response = await axios.post(url, data, {

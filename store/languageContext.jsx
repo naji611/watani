@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from "react";
-import * as SecureStore from "expo-secure-store"; // Import expo-secure-store
+import * as SecureStore from "expo-secure-store";
 
 export const LanguageContext = createContext({
   language: "",
@@ -11,7 +11,7 @@ export default function LanguageContextProvider({ children }) {
 
   useEffect(() => {
     const loadLanguage = async () => {
-      const storedLanguage = await SecureStore.getItemAsync("language"); // Use expo-secure-store instead of SecureStorage
+      const storedLanguage = await SecureStore.getItemAsync("language");
 
       if (storedLanguage) {
         console.log("set to :", storedLanguage);
@@ -26,7 +26,7 @@ export default function LanguageContextProvider({ children }) {
     setLanguage((prevLang) => {
       const newLang = prevLang === "en" ? "ar" : "en";
       console.log("store to :", newLang);
-      SecureStore.setItemAsync("language", newLang); // Use expo-secure-store instead of SecureStorage
+      SecureStore.setItemAsync("language", newLang);
       return newLang;
     });
   };
